@@ -133,6 +133,8 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
 #join.active{display:grid;place-items:center;min-height:70vh}
 .joinbox{width:min(440px,100%);background:var(--surface);border:2.5px solid var(--ink);border-radius:20px 16px 22px 18px;box-shadow:6px 6px 0 var(--ink);padding:26px 26px 18px;display:flex;flex-direction:column;gap:14px}
 .joinbox h1{margin:0 0 4px;font-size:36px;line-height:1.15}
+.joinbox .two{display:grid;grid-template-columns:2fr 3fr;gap:10px}
+.joinbox .two input{min-width:0;width:100%}
 .joinbox label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:15px}
 .joinbox input{font:inherit;font-size:20px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink)}
 #joinCode{letter-spacing:.2em;font-family:"Jua",sans-serif;font-size:24px}
@@ -180,10 +182,13 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
   <div class="joinbox">
     <h1>우리 반 게임방<br>들어가기</h1>
     <label>반 코드<input id="joinCode" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="선생님이 알려 준 코드"></label>
-    <label>내 이름<input id="joinName" maxlength="16" autocomplete="off" placeholder="예: 12번 김민지"></label>
+    <div class="two">
+      <label>학번<input id="joinSid" maxlength="6" inputmode="numeric" autocomplete="off" placeholder="예: 30215"></label>
+      <label>이름<input id="joinName" maxlength="10" autocomplete="off" placeholder="예: 김민지"></label>
+    </div>
     <button class="btn primary" id="joinBtn">입장하기</button>
     <p class="err" id="joinErr"></p>
-    <p class="notice">입장하면 선생님 화면에 내 이름, 접속 상태, 앱을 벗어난 횟수와 시간, 제출한 맵이 보여요.</p>
+    <p class="notice">입장하면 선생님 화면에 내 학번과 이름, 접속 상태, 앱을 벗어난 횟수와 시간, 제출한 맵이 보여요.</p>
     <button class="plain-link" id="practiceBtn">입장하지 않고 연습만 하기</button>
   </div>
 </section>
@@ -786,7 +791,7 @@ async function join(code,name){
   if(!own.exists()) throw {k:'nocode'};
   Object.assign(me,{code,name,uid:fb.auth.currentUser.uid,joined:true,practice:false});
   lastF=curFocus(); awayStart=0;
-  await update(myRef(),{name,online:true,focus:lastF,mode:'home',extended:extState(),joinedAt:serverTimestamp(),lastChange:serverTimestamp()});
+  await update(myRef(),{name,sid:me.sid||'',rname:me.rname||'',online:true,focus:lastF,mode:'home',extended:extState(),joinedAt:serverTimestamp(),lastChange:serverTimestamp()});
   unsubs.push(onValue(ref(fb.db,'.info/connected'),snap=>{
     if(snap.val()!==true||!me.joined) return;
     onDisconnect(myRef()).update({online:false,lastChange:serverTimestamp()})
@@ -812,18 +817,21 @@ function subscribeSubs(){
   },()=>{ subUnsub=null; });
 }
 function showWho(){
-  $('#whoText').textContent = me.joined ? `${me.name}, 반 코드 ${me.code}` : '연습 모드라서 제출은 안 돼요';
+  $('#whoText').textContent = me.joined ? `학번 ${me.sid} ${me.rname}, 반 코드 ${me.code}` : '연습 모드라서 제출은 안 돼요';
 }
 /* join screen */
-$('#joinCode').value=lsGet('doodle-code'); $('#joinName').value=lsGet('doodle-name');
+$('#joinCode').value=lsGet('doodle-code'); $('#joinSid').value=lsGet('doodle-sid'); $('#joinName').value=lsGet('doodle-rname');
+$('#joinSid').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/[^0-9]/g,''); });
 if(!CONFIG_OK) $('#joinErr').textContent='아직 Firebase 설정이 없어요. 선생님이 firebase-config.js를 채워야 입장할 수 있어요.';
 $('#joinCode').addEventListener('input',e=>{ e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,''); });
 $('#joinBtn').addEventListener('click',async()=>{
-  const code=$('#joinCode').value.trim().toUpperCase(), name=$('#joinName').value.trim();
+  const code=$('#joinCode').value.trim().toUpperCase(), sid=$('#joinSid').value.trim(), rname=$('#joinName').value.trim().replace(/\s+/g,' ');
   if(code.length<4){ $('#joinErr').textContent='반 코드를 확인해 주세요.'; return; }
-  if(!name){ $('#joinErr').textContent='이름을 써 주세요.'; return; }
+  if(!/^[0-9]{3,6}$/.test(sid)){ $('#joinErr').textContent='학번을 숫자로 써 주세요. 예: 30215'; return; }
+  if(!rname){ $('#joinErr').textContent='이름을 써 주세요.'; return; }
+  const name=`${sid} ${rname}`; me.sid=sid; me.rname=rname;
   $('#joinBtn').disabled=true; $('#joinErr').textContent='들어가는 중이에요…';
-  try{ await join(code,name); lsSet('doodle-code',code); lsSet('doodle-name',name); $('#joinErr').textContent=''; showWho(); showScreen('home'); }
+  try{ await join(code,name); lsSet('doodle-code',code); lsSet('doodle-sid',sid); lsSet('doodle-rname',rname); $('#joinErr').textContent=''; showWho(); showScreen('home'); }
   catch(e){ $('#joinErr').textContent = e&&e.k==='nocode' ? '없는 반 코드예요. 선생님께 다시 확인해 주세요.' : e&&e.k==='config' ? 'Firebase 설정이 없어서 입장할 수 없어요.' : '들어가지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'; }
   $('#joinBtn').disabled=false;
 });
@@ -871,7 +879,7 @@ $('#shareUpload').addEventListener('click',async()=>{
   confirmSubmit=false; shareStatus('제출하는 중이에요…');
   const doors=lv.doors.map(d=>{ const q=doorQs[d.qi]; const r=aiFresh(q)?q.ai:null; return {no:d.no,x:+d.x.toFixed(2),y:+d.y.toFixed(2),q:q.q.slice(0,300),a:q.a.slice(0,100),verdict:r?r.verdict:'unchecked',ai:r?String(r.message||'').slice(0,300):''}; });
   try{
-    await set(ref(fb.db,cPath('submissions/'+me.uid)),{name:me.name,title,img:encodePad(),doors,submittedAt:serverTimestamp()});
+    await set(ref(fb.db,cPath('submissions/'+me.uid)),{name:me.name,sid:me.sid||'',rname:me.rname||'',title,img:encodePad(),doors,submittedAt:serverTimestamp()});
     send({submittedAt:serverTimestamp(),title}); currentMeta={title};
     shareStatus('제출했어요! 다시 제출하면 마지막 맵으로 바뀌어요.');
   }catch(e){ shareStatus('제출하지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'); }
