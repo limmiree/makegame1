@@ -1,17 +1,16 @@
-// Firebase 콘솔 > 프로젝트 설정 > 내 앱(웹)에서 복사한 값으로 바꿔 넣으세요.
-// databaseURL은 Realtime Database 화면 위쪽에 보이는 주소예요.
+// Firebase 콘솔 > 프로젝트 설정 > 내 앱(웹)에서 복사한 값
 export const firebaseConfig = {
-  apiKey: "여기에-apiKey",
-  authDomain: "프로젝트ID.firebaseapp.com",
-  databaseURL: "https://프로젝트ID-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "프로젝트ID",
-  storageBucket: "프로젝트ID.appspot.com",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyDGYvrqiT1pBJZ7AQJMOSYTvfvBXc-BpPE",
+  authDomain: "makegame1-ee5e9.firebaseapp.com",
+  databaseURL: "https://makegame1-ee5e9-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "makegame1-ee5e9",
+  storageBucket: "makegame1-ee5e9.firebasestorage.app",
+  messagingSenderId: "513778410041",
+  appId: "1:513778410041:web:ce127a07ed55d05b58e3e8"
 };
 
-// AI 문제 검사용 App Check 키 (reCAPTCHA Enterprise 사이트 키). 설정 안내 7단계 참고.
+// AI 문제 검사용 App Check 키 (reCAPTCHA Enterprise 사이트 키). 나중에 설정해요.
 export const appCheckSiteKey = "";
 
-// 문제 검사에 쓸 Gemini 모델 이름. Firebase AI Logic이 지원하는 모델로 바꿀 수 있어요.
+// 문제 검사에 쓸 Gemini 모델 이름
 export const aiModel = "gemini-3.5-flash";
