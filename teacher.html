@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>도화지 아케이드 · 선생님 화면</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f3f6fb; --grid:#dde5f0; --surface:#ffffff; --surface-2:#eaf0f8;
+  --ink:#1d2340; --muted:#5b6380; --line:#cfd8e6; --marker:#ffd23f; --on-marker:#1d2340; --pink:#ff6fa5;
+  --ok:#2e9e4b; --blur:#e8a317; --out:#e5484d; --off:#9aa3b5;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root{ --paper:#12152a; --grid:#1f2547; --surface:#1b2040; --surface-2:#232a52; --ink:#eef1fb; --muted:#9aa3c4; --line:#333b6a; color-scheme:dark; } }
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none !important}
+body{margin:0;color:var(--ink);background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;font-size:16px;line-height:1.55}
+h1,h2,h3,.btn,.brand,.tab,.code,.num{font-family:"Jua","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-weight:400}
+button:focus-visible,input:focus-visible{outline:3px solid var(--pink);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding:14px 20px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0 14px}
+.brand{display:flex;align-items:center;gap:10px;font-size:22px}
+.logo{width:36px;height:36px;border:2.5px solid var(--ink);border-radius:10px 14px 9px 13px;background:var(--marker);display:grid;place-items:center;font-size:20px;transform:rotate(-4deg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:17px;color:var(--ink);background:var(--surface);border:2.5px solid var(--ink);border-radius:14px 16px 13px 15px;padding:9px 16px;box-shadow:3px 3px 0 var(--ink);cursor:pointer;white-space:nowrap}
+.btn:active{transform:translate(3px,3px);box-shadow:none}
+.btn.primary{background:var(--marker);color:var(--on-marker)}
+.btn.ghost{box-shadow:none;border-color:var(--line);background:transparent}
+.btn.danger.sure{background:var(--out);color:#fff;border-color:var(--out)}
+.panel{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:18px 20px}
+.muted{color:var(--muted)}
+.err{color:var(--out);font-weight:600;min-height:1.4em;margin:6px 0 0}
+input[type=text]{font:inherit;font-size:17px;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+
+/* sign-in / classes */
+.center{display:grid;place-items:center;min-height:60vh}
+.signin{max-width:460px;text-align:center}
+.signin h1{font-size:38px;margin:0 0 8px}
+.classes{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:14px}
+.cls{text-align:left;cursor:pointer;font:inherit;color:var(--ink);background:var(--surface);border:2.5px solid var(--ink);border-radius:16px;padding:16px 18px;box-shadow:4px 4px 0 var(--ink)}
+.cls:active{transform:translate(4px,4px);box-shadow:none}
+.cls b{display:block;font-family:"Jua",sans-serif;font-weight:400;font-size:22px}
+.cls span{font-family:"Jua",sans-serif;letter-spacing:.15em;color:var(--muted)}
+.newcls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+/* dashboard head */
+.dhead{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;margin-bottom:14px}
+.dhead h2{font-size:30px;margin:0}
+.codebox{display:flex;align-items:center;gap:10px;background:var(--marker);color:var(--on-marker);border:2.5px solid var(--ink);border-radius:14px;padding:4px 14px;box-shadow:3px 3px 0 var(--ink)}
+.codebox small{font-size:13px}
+.code{font-size:34px;letter-spacing:.18em;line-height:1.2}
+.switch{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600}
+.switch input{width:46px;height:26px;accent-color:var(--ok)}
+.spacer{flex:1}
+.tabs{display:flex;gap:6px;border-bottom:2.5px solid var(--ink);margin-bottom:16px}
+.tab{font-size:20px;padding:8px 18px;border:2.5px solid var(--ink);border-bottom:none;border-radius:12px 12px 0 0;background:var(--surface-2);color:var(--ink);cursor:pointer;margin-bottom:-2.5px}
+.tab.on{background:var(--surface)}
+.tab .badge{font-size:14px;background:var(--ink);color:var(--paper);border-radius:999px;padding:0 8px;margin-left:6px}
+
+/* live */
+.summary{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.sum{display:flex;align-items:center;gap:10px;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:8px 14px}
+.sum .num{font-size:30px;line-height:1}
+.dot{width:14px;height:14px;border-radius:50%;background:var(--c);flex:none}
+.livegrid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start}
+.students{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.st{background:var(--surface);border:2px solid var(--line);border-left:8px solid var(--c);border-radius:12px;padding:10px 12px 10px 12px;position:relative}
+.st.out{background:color-mix(in srgb,var(--out) 9%,var(--surface))}
+.st.blur{background:color-mix(in srgb,var(--blur) 10%,var(--surface))}
+.st h3{margin:0;font-size:20px;line-height:1.25;padding-right:22px;overflow-wrap:anywhere}
+.st .state{font-weight:700;color:var(--c);font-size:15px}
+.st .meta{font-size:13px;color:var(--muted);display:grid;gap:1px;margin-top:4px}
+.st .tag{display:inline-block;font-size:12px;border-radius:6px;padding:0 6px;margin:4px 4px 0 0;background:var(--surface-2)}
+.st .tag.done{background:var(--marker);color:var(--on-marker)}
+.st .tag.ext{background:var(--out);color:#fff}
+.st .x{position:absolute;top:6px;right:6px;border:none;background:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 6px;border-radius:6px}
+.st .x.sure{background:var(--out);color:#fff;font-size:12px}
+.log{max-height:70vh;overflow:auto}
+.log h3{margin:0 0 8px;font-size:20px}
+.log ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.log li{font-size:14px;display:grid;grid-template-columns:52px 1fr;gap:8px}
+.log time{color:var(--muted);font-variant-numeric:tabular-nums}
+.log .e-out{color:var(--out);font-weight:700}
+.log .e-blur{color:var(--blur);font-weight:700}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+
+/* submissions */
+.subbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.missing{font-size:14px;color:var(--muted);margin:0 0 14px}
+.subs{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--w,280px),1fr));gap:16px}
+.sub{background:var(--surface);border:2.5px solid var(--ink);border-radius:14px;overflow:hidden;box-shadow:4px 4px 0 var(--ink);cursor:pointer;text-align:left;padding:0;font:inherit;color:var(--ink)}
+.sub img{display:block;width:100%;aspect-ratio:3/2;object-fit:contain;background:#fff;border-bottom:2px solid var(--line)}
+.sub .si{padding:8px 12px 10px}
+.sub b{font-family:"Jua",sans-serif;font-weight:400;font-size:19px;display:block;overflow-wrap:anywhere}
+.sub span{font-size:13px;color:var(--muted)}
+.viewer{position:fixed;inset:0;z-index:20;background:rgba(10,12,28,.86);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 12px) 16px calc(env(safe-area-inset-bottom,0px) + 12px)}
+.vtop{display:flex;align-items:center;gap:12px;color:#fff}
+.vtop h3{margin:0;font-size:26px;flex:1;overflow-wrap:anywhere}
+.vtop .muted{color:#c9cfe6}
+.vbody{flex:1;min-height:0;display:flex;gap:14px}
+.vdoors{width:340px;flex:none;overflow:auto;padding:12px 0;display:flex;flex-direction:column;gap:10px}
+.vd{background:#fff;color:#1d2340;border-radius:12px;padding:10px 12px;border-left:6px solid #ff7a00}
+.vd h4{margin:0 0 4px;font-family:"Jua",sans-serif;font-weight:400;font-size:18px}
+.vd p{margin:2px 0;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.vd .v{font-weight:700}
+.vd .v.ok{color:#2e7d43}.vd .v.bad{color:#c62828}.vd .v.warn{color:#b26a00}
+.tagline{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.chip2{font-size:12px;border-radius:6px;padding:0 6px;background:var(--surface-2)}
+.chip2.bad{background:#e5484d;color:#fff}
+@media (max-width:900px){ .vbody{flex-direction:column} .vdoors{width:auto;max-height:34vh} }
+.vimg{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 0}
+.vimg img{max-width:calc(100% - 140px);max-height:100%;background:#fff;border-radius:10px;border:3px solid #fff}
+.vnav{width:56px;height:56px;border-radius:50%;border:2.5px solid #fff;background:transparent;color:#fff;font-size:24px;cursor:pointer;flex:none}
+@media (max-width:900px){ .livegrid{grid-template-columns:1fr} .log{max-height:none} }
+@media (max-width:600px){ .vimg img{max-width:100%} .vnav{display:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand"><span class="logo">🖍️</span><span>도화지 아케이드 선생님 화면</span></div>
+  <div id="acct" hidden><span class="muted" id="acctName"></span> <button class="btn ghost" id="signOutBtn">로그아웃</button></div>
+</header>
+
+<section id="vSignin" class="center">
+  <div class="panel signin">
+    <h1>선생님 로그인</h1>
+    <p class="muted">Google 계정으로 로그인하면 반을 만들고, 학생 접속 상태와 제출한 맵을 볼 수 있어요.</p>
+    <button class="btn primary" id="signInBtn">Google 계정으로 로그인</button>
+    <p class="err" id="signErr"></p>
+  </div>
+</section>
+
+<section id="vClasses" hidden>
+  <div class="panel">
+    <h2 style="margin:0">내 반</h2>
+    <div class="classes" id="classList"></div>
+    <p class="muted" id="noClass" hidden>아직 만든 반이 없어요. 아래에서 첫 반을 만들어 보세요.</p>
+    <div class="newcls">
+      <input type="text" id="newName" maxlength="20" placeholder="반 이름 (예: 3학년 2반 수학)">
+      <button class="btn primary" id="createBtn">새 반 만들기</button>
+    </div>
+    <p class="err" id="classErr"></p>
+  </div>
+</section>
+
+<section id="vDash" hidden>
+  <div class="dhead">
+    <button class="btn ghost" id="backBtn">← 반 목록</button>
+    <h2 id="dName"></h2>
+    <div class="codebox"><small>학생 입장 코드</small><span class="code" id="dCode"></span></div>
+    <span class="spacer"></span>
+    <label class="switch"><input type="checkbox" id="galleryChk"> 학생 갤러리 열기</label>
+    <label class="switch"><input type="checkbox" id="beepChk"> 나가면 알림음</label>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-t="live">실시간 현황<span class="badge" id="bLive">0</span></button>
+    <button class="tab" data-t="subs">제출된 맵<span class="badge" id="bSubs">0</span></button>
+  </div>
+
+  <div id="tLive">
+    <div class="summary" id="summary"></div>
+    <div class="livegrid">
+      <div>
+        <div class="students" id="students"></div>
+        <p class="empty" id="noStudents">아직 들어온 학생이 없어요. 학생들에게 입장 코드를 알려 주세요.</p>
+        <div style="margin-top:16px"><button class="btn ghost danger" id="clearBtn">학생 목록 비우기</button></div>
+      </div>
+      <div class="panel log">
+        <h3>최근 알림</h3>
+        <ol id="log"></ol>
+        <p class="muted" id="noLog" style="margin:0;font-size:14px">학생이 앱을 벗어나면 여기에 시간과 함께 표시돼요.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="tSubs" hidden>
+    <div class="subbar">
+      <span class="muted">크기</span>
+      <button class="btn ghost" data-w="200">작게</button>
+      <button class="btn ghost" data-w="280">보통</button>
+      <button class="btn ghost" data-w="420">크게</button>
+      <span class="spacer"></span>
+      <button class="btn" id="showAll">🖼 첫 맵부터 크게 보기</button>
+    </div>
+    <p class="missing" id="missing"></p>
+    <div class="subs" id="subs"></div>
+    <p class="empty" id="noSubs">아직 제출된 맵이 없어요.</p>
+  </div>
+</section>
+</div>
+
+<div class="viewer" id="viewer" hidden>
+  <div class="vtop">
+    <h3 id="vTitle"></h3>
+    <span class="muted" id="vMeta"></span>
+    <button class="btn danger" id="vDel">삭제</button>
+    <button class="btn" id="vClose">닫기 ✕</button>
+  </div>
+  <div class="vbody">
+  <div class="vimg">
+    <button class="vnav" id="vPrev" aria-label="이전 맵">◀</button>
+    <img id="vImg" alt="">
+    <button class="vnav" id="vNext" aria-label="다음 맵">▶</button>
+  </div>
+  <div class="vdoors" id="vDoors"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
+import { firebaseConfig } from "./firebase-config.js";
+
+const $=s=>document.querySelector(s);
+const CONFIG_OK = !!(firebaseConfig && firebaseConfig.apiKey && firebaseConfig.databaseURL && !/여기/.test(firebaseConfig.apiKey));
+const views=['vSignin','vClasses','vDash'];
+const show=v=>views.forEach(id=>$('#'+id).hidden=id!==v);
+if(!CONFIG_OK){ $('#signErr').textContent='firebase-config.js에 Firebase 설정을 먼저 넣어 주세요.'; $('#signInBtn').disabled=true; }
+
+const app = CONFIG_OK ? initializeApp(firebaseConfig) : null;
+const auth = app ? getAuth(app) : null, db = app ? getDatabase(app) : null;
+let uid=null, cur=null, unsubs=[], offset=0;
+let students={}, prevStudents=null, subsData={}, events=[], subOrder=[], vIndex=0;
+
+function armed(btn,label,sureLabel,fn){
+  let on=false;
+  btn.addEventListener('click',()=>{
+    if(!on){ on=true; btn.classList.add('sure'); btn.textContent=sureLabel; setTimeout(()=>{ on=false; btn.classList.remove('sure'); btn.textContent=label; },3000); return; }
+    on=false; btn.classList.remove('sure'); btn.textContent=label; fn();
+  });
+}
+if(auth){
+  onValue(ref(db,'.info/serverTimeOffset'),s=>{ offset=s.val()||0; });
+  onAuthStateChanged(auth,u=>{
+    uid=u&&!u.isAnonymous?u.uid:null;
+    $('#acct').hidden=!uid; $('#acctName').textContent=u?(u.displayName||u.email||''):'';
+    if(uid) openClasses(); else { closeClass(); show('vSignin'); }
+  });
+}
+$('#signInBtn').addEventListener('click',async()=>{
+  $('#signErr').textContent='';
+  try{ await signInWithPopup(auth,new GoogleAuthProvider()); }
+  catch(e){ $('#signErr').textContent = e&&e.code==='auth/unauthorized-domain' ? '이 주소가 Firebase 승인된 도메인에 없어요. 설정 안내의 6단계를 확인해 주세요.' : e&&e.code==='auth/popup-blocked' ? '팝업이 막혔어요. 브라우저에서 팝업을 허용해 주세요.' : '로그인하지 못했어요. 다시 눌러 주세요.'; }
+});
+$('#signOutBtn').addEventListener('click',()=>signOut(auth));
+
+/* ---------- classes ---------- */
+let clsUnsub=null;
+function openClasses(){
+  closeClass(); show('vClasses');
+  if(clsUnsub) clsUnsub();
+  clsUnsub=onValue(ref(db,`teachers/${uid}/classes`),s=>{
+    const v=s.val()||{}, list=$('#classList'); list.textContent='';
+    const items=Object.entries(v).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+    $('#noClass').hidden=items.length>0;
+    for(const [code,c] of items){
+      const b=document.createElement('button'); b.className='cls';
+      const n=document.createElement('b'); n.textContent=c.name||'이름 없는 반';
+      const k=document.createElement('span'); k.textContent=code;
+      b.append(n,k); b.addEventListener('click',()=>openClass(code,c.name||'')); list.appendChild(b);
+    }
+  });
+}
+const ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function makeCode(){ let s=''; const a=new Uint32Array(6); crypto.getRandomValues(a); for(const x of a) s+=ALPH[x%ALPH.length]; return s; }
+$('#createBtn').addEventListener('click',async()=>{
+  const name=$('#newName').value.trim().slice(0,20)||'우리 반';
+  $('#classErr').textContent='';
+  for(let i=0;i<5;i++){
+    const code=makeCode();
+    try{
+      await set(ref(db,`classes/${code}/owner`),uid);
+      await set(ref(db,`classes/${code}/settings`),{className:name,galleryOpen:false});
+      await set(ref(db,`teachers/${uid}/classes/${code}`),{name,createdAt:serverTimestamp()});
+      $('#newName').value=''; openClass(code,name); return;
+    }catch(e){ /* 코드가 겹치면 다른 코드로 다시 시도 */ }
+  }
+  $('#classErr').textContent='반을 만들지 못했어요. 데이터베이스 규칙을 게시했는지 확인해 주세요.';
+});
+
+/* ---------- dashboard ---------- */
+function closeClass(){ unsubs.forEach(u=>u()); unsubs=[]; cur=null; students={}; prevStudents=null; subsData={}; events=[]; $('#viewer').hidden=true; }
+function openClass(code,name){
+  if(clsUnsub){ clsUnsub(); clsUnsub=null; }
+  closeClass(); cur=code; show('vDash');
+  $('#dName').textContent=name; $('#dCode').textContent=code;
+  renderLog();
+  unsubs.push(onValue(ref(db,`classes/${code}/settings`),s=>{ const v=s.val()||{}; $('#galleryChk').checked=!!v.galleryOpen; if(v.className) $('#dName').textContent=v.className; }));
+  unsubs.push(onValue(ref(db,`classes/${code}/students`),s=>{ students=s.val()||{}; diffEvents(); prevStudents=JSON.parse(JSON.stringify(students)); renderStudents(); renderSubs(); }));
+  unsubs.push(onValue(ref(db,`classes/${code}/submissions`),s=>{ subsData=s.val()||{}; renderSubs(); renderStudents(); }));
+}
+$('#backBtn').addEventListener('click',openClasses);
+$('#galleryChk').addEventListener('change',e=>{ if(cur) update(ref(db,`classes/${cur}/settings`),{galleryOpen:e.target.checked}).catch(()=>{ e.target.checked=!e.target.checked; }); });
+armed($('#clearBtn'),'학생 목록 비우기','한 번 더 누르면 비워요',()=>{ if(cur) remove(ref(db,`classes/${cur}/students`)); });
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));
+  $('#tLive').hidden=t.dataset.t!=='live'; $('#tSubs').hidden=t.dataset.t!=='subs';
+}));
+
+const now=()=>Date.now()+offset;
+const MODES={home:'첫 화면',draw:'그리는 중',play:'플레이 중',gallery:'갤러리 보는 중',join:'입장 화면'};
+const ORDER={out:0,blur:1,stale:2,off:3,ok:4};
+function statusOf(s){
+  if(!s.online) return {k:'off',t:'접속 끊김',c:'var(--off)'};
+  if(s.focus==='hidden') return {k:'out',t:'앱 밖으로 나감',c:'var(--out)'};
+  if(s.focus==='blur') return {k:'blur',t:'다른 화면 보는 중',c:'var(--blur)'};
+  const last=Math.max(s.beat||0,s.lastChange||0,s.joinedAt||0);
+  if(last && now()-last>95000) return {k:'stale',t:'응답 없음',c:'var(--off)'};
+  return {k:'ok',t:'앱 보는 중',c:'var(--ok)'};
+}
+function ago(t){ if(!t) return ''; const d=Math.max(0,(now()-t)/1000); if(d<10) return '방금'; if(d<60) return Math.floor(d)+'초 전'; if(d<3600) return Math.floor(d/60)+'분 전'; return Math.floor(d/3600)+'시간 전'; }
+function dur(ms){ ms=ms||0; const s=Math.round(ms/1000); if(s<60) return s+'초'; const m=Math.floor(s/60); return m+'분 '+(s%60)+'초'; }
+function hhmm(t){ const d=new Date(t); return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+
+let actx=null;
+function beep(){ if(!$('#beepChk').checked) return; try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); const o=actx.createOscillator(),g=actx.createGain(),t=actx.currentTime; o.frequency.value=880; g.gain.setValueAtTime(.08,t); g.gain.exponentialRampToValueAtTime(.0001,t+.35); o.connect(g).connect(actx.destination); o.start(t); o.stop(t+.4); }catch(e){} }
+$('#beepChk').addEventListener('change',()=>{ try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)(); actx.resume(); }catch(e){} });
+
+function diffEvents(){
+  if(!prevStudents) return;
+  let alert=false;
+  for(const [id,s] of Object.entries(students)){
+    const p=prevStudents[id]; const name=s.name||'이름 없음'; const t=now();
+    if(!p){ events.unshift({t,c:'',m:`${name} 입장`}); continue; }
+    const a=statusOf(p).k, b=statusOf(s).k;
+    if(a!==b){
+      if(b==='out'){ events.unshift({t,c:'e-out',m:`${name} 앱 밖으로 나감`}); alert=true; }
+      else if(b==='blur'){ events.unshift({t,c:'e-blur',m:`${name} 다른 화면 보는 중`}); }
+      else if(b==='off') events.unshift({t,c:'',m:`${name} 접속 끊김`});
+      else if(b==='ok' && (a==='out'||a==='blur')) events.unshift({t,c:'',m:`${name} 앱으로 돌아옴`});
+      else if(b==='ok' && a==='off') events.unshift({t,c:'',m:`${name} 다시 접속`});
+    }
+    if(s.extended===true && p.extended!==true){ events.unshift({t,c:'e-out',m:`${name} 외부 화면 연결됨`}); alert=true; }
+    if(s.submittedAt && s.submittedAt!==p.submittedAt) events.unshift({t,c:'',m:`${name} 맵 제출`});
+  }
+  events=events.slice(0,80); renderLog(); if(alert) beep();
+}
+function renderLog(){
+  const ol=$('#log'); ol.textContent=''; $('#noLog').hidden=events.length>0;
+  for(const e of events){ const li=document.createElement('li'); const tm=document.createElement('time'); tm.textContent=hhmm(e.t); const sp=document.createElement('span'); sp.textContent=e.m; if(e.c) sp.className=e.c; li.append(tm,sp); ol.appendChild(li); }
+}
+function renderStudents(){
+  const box=$('#students'); box.textContent='';
+  const list=Object.entries(students).map(([id,s])=>({id,s,st:statusOf(s)}))
+    .sort((a,b)=>ORDER[a.st.k]-ORDER[b.st.k] || String(a.s.name||'').localeCompare(String(b.s.name||''),'ko',{numeric:true}));
+  $('#noStudents').hidden=list.length>0;
+  const cnt={ok:0,blur:0,out:0,off:0,stale:0};
+  for(const {id,s,st} of list){
+    cnt[st.k]++;
+    const card=document.createElement('div'); card.className='st '+st.k; card.style.setProperty('--c',st.c);
+    const h=document.createElement('h3'); h.textContent=s.name||'이름 없음';
+    const state=document.createElement('div'); state.className='state'; state.textContent=st.t+(st.k!=='ok'?' · '+ago(s.lastChange):'');
+    const meta=document.createElement('div'); meta.className='meta';
+    const l1=document.createElement('span'); l1.textContent=s.online?(MODES[s.mode]||''):'마지막 접속 '+ago(s.lastChange);
+    const l2=document.createElement('span'); l2.textContent=`벗어난 횟수 ${s.awayCount||0}번, 합계 ${dur(s.awayMs)}`;
+    meta.append(l1,l2);
+    const tags=document.createElement('div');
+    if(subsData[id]){ const t=document.createElement('span'); t.className="tag done"; t.textContent='제출함 '+ago(subsData[id].submittedAt); tags.appendChild(t); }
+    if(s.extended===true){ const t=document.createElement('span'); t.className='tag ext'; t.textContent='🖥 외부 화면 연결됨'; tags.appendChild(t); }
+    const x=document.createElement('button'); x.className='x'; x.textContent='✕'; x.title='목록에서 지우기';
+    armed(x,'✕','지우기',()=>remove(ref(db,`classes/${cur}/students/${id}`)));
+    card.append(x,h,state,meta,tags); box.appendChild(card);
+  }
+  const online=list.length-cnt.off;
+  $('#bLive').textContent=online;
+  const sum=$('#summary'); sum.textContent='';
+  const items=[['var(--ok)','앱 보는 중',cnt.ok],['var(--blur)','다른 화면',cnt.blur],['var(--out)','앱 밖으로 나감',cnt.out],['var(--off)','끊김·응답 없음',cnt.off+cnt.stale],['var(--marker)','제출',Object.keys(subsData).length]];
+  for(const [c,t,n] of items){ const d=document.createElement('div'); d.className='sum'; const dot=document.createElement('i'); dot.className='dot'; dot.style.setProperty('--c',c); const num=document.createElement('span'); num.className='num'; num.textContent=n; const lb=document.createElement('span'); lb.textContent=t; d.append(dot,num,lb); sum.appendChild(d); }
+}
+setInterval(()=>{ if(cur) renderStudents(); },5000);
+
+/* ---------- submissions ---------- */
+function renderSubs(){
+  const box=$('#subs'); box.textContent='';
+  subOrder=Object.entries(subsData).map(([id,v])=>Object.assign({id},v)).filter(v=>typeof v.img==='string'&&v.img.startsWith('data:image/'))
+    .sort((a,b)=>String(a.name||'').localeCompare(String(b.name||''),'ko',{numeric:true}));
+  $('#bSubs').textContent=subOrder.length; $('#noSubs').hidden=subOrder.length>0;
+  subOrder.forEach((v,i)=>{
+    const b=document.createElement('button'); b.className='sub';
+    const im=document.createElement('img'); im.src=v.img; im.alt=''; im.loading='lazy';
+    const si=document.createElement('div'); si.className='si';
+    const n=document.createElement('b'); n.textContent=v.name||'이름 없음';
+    const t=document.createElement('span'); t.textContent=`“${v.title||'이름 없는 게임'}”, ${v.submittedAt?hhmm(v.submittedAt):''} 제출`;
+    const ds=doorList(v), bad=ds.filter(d=>d.verdict&&d.verdict!=='ok').length;
+    const tl=document.createElement('div'); tl.className='tagline';
+    const c1=document.createElement('span'); c1.className='chip2'; c1.textContent=`🚪 문 ${ds.length}개`; tl.appendChild(c1);
+    if(bad){ const c2=document.createElement('span'); c2.className='chip2 bad'; c2.textContent=`AI 확인 필요 ${bad}`; tl.appendChild(c2); }
+    si.append(n,t,tl); b.append(im,si); b.addEventListener('click',()=>openViewer(i)); box.appendChild(b);
+  });
+  const missing=Object.entries(students).filter(([id])=>!subsData[id]).map(([,s])=>s.name||'이름 없음').sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
+  $('#missing').textContent = missing.length ? `아직 안 낸 학생 ${missing.length}명: ${missing.join(', ')}` : (Object.keys(students).length?'들어온 학생이 모두 제출했어요.':'');
+  if(!$('#viewer').hidden){ if(!subOrder.length) closeViewer(); else showViewer(Math.min(vIndex,subOrder.length-1)); }
+}
+document.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('click',()=>$('#subs').style.setProperty('--w',b.dataset.w+'px')));
+$('#showAll').addEventListener('click',()=>{ if(subOrder.length) openViewer(0); });
+const VTXT={ok:['ok','✅ 이상 없음'],wrong_answer:['bad','❌ 정답 틀림'],incomplete:['warn','⚠️ 정답 불완전'],unclear:['warn','⚠️ 문제 애매함'],not_math:['warn','⚠️ 수학 문제 아님'],inappropriate:['bad','❌ 부적절한 내용'],unchecked:['warn','검사 안 함']};
+const doorList=v=>Array.isArray(v.doors)?v.doors:Object.values(v.doors||{});
+function openViewer(i){ $('#viewer').hidden=false; showViewer(i); }
+function showViewer(i){
+  vIndex=(i+subOrder.length)%subOrder.length; const v=subOrder[vIndex];
+  $('#vImg').src=v.img; $('#vTitle').textContent=`${v.name||'이름 없음'}의 “${v.title||'이름 없는 게임'}”`;
+  $('#vMeta').textContent=`${vIndex+1} / ${subOrder.length}`;
+  const box=$('#vDoors'); box.textContent='';
+  const ds=doorList(v);
+  if(!ds.length){ const p=document.createElement('div'); p.className='vd'; p.textContent='문제 문이 없는 맵이에요.'; box.appendChild(p); }
+  for(const d of ds){
+    const el=document.createElement('div'); el.className='vd';
+    const h=document.createElement('h4'); h.textContent=`🚪 ${d.no}번 문`;
+    const q=document.createElement('p'); q.textContent='문제: '+(d.q||'');
+    const a=document.createElement('p'); a.textContent='정답: '+(d.a||'');
+    const t=VTXT[d.verdict]||VTXT.unchecked; const vv=document.createElement('p'); vv.className='v '+t[0]; vv.textContent='AI: '+t[1];
+    el.append(h,q,a,vv);
+    if(d.ai){ const m=document.createElement('p'); m.textContent=d.ai; m.style.color='#5b6380'; el.appendChild(m); }
+    box.appendChild(el);
+  }
+}
+function closeViewer(){ $('#viewer').hidden=true; }
+$('#vPrev').addEventListener('click',()=>showViewer(vIndex-1));
+$('#vNext').addEventListener('click',()=>showViewer(vIndex+1));
+$('#vClose').addEventListener('click',closeViewer);
+armed($('#vDel'),'삭제','한 번 더 누르면 삭제',()=>{ const v=subOrder[vIndex]; if(v&&cur) remove(ref(db,`classes/${cur}/submissions/${v.id}`)); });
+window.addEventListener('keydown',e=>{ if($('#viewer').hidden) return; if(e.key==='ArrowLeft') showViewer(vIndex-1); else if(e.key==='ArrowRight') showViewer(vIndex+1); else if(e.key==='Escape') closeViewer(); });
+let sx=null;
+$('#viewer').addEventListener('pointerdown',e=>{ sx=e.clientX; });
+$('#viewer').addEventListener('pointerup',e=>{ if(sx===null) return; const d=e.clientX-sx; sx=null; if(Math.abs(d)>60) showViewer(vIndex+(d<0?1:-1)); });
+</script>
+</body>
+</html>

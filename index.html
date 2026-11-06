@@ -1,0 +1,1148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>도화지 아케이드 · 그리면서 노는 게임</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f3f6fb; --grid:#dde5f0; --surface:#ffffff; --surface-2:#eaf0f8;
+  --ink:#1d2340; --muted:#5b6380; --line:#cfd8e6;
+  --marker:#ffd23f; --on-marker:#1d2340; --pink:#ff6fa5;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --paper:#12152a; --grid:#1f2547; --surface:#1b2040; --surface-2:#232a52; --ink:#eef1fb; --muted:#9aa3c4; --line:#333b6a; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --paper:#12152a; --grid:#1f2547; --surface:#1b2040; --surface-2:#232a52; --ink:#eef1fb; --muted:#9aa3c4; --line:#333b6a; color-scheme:dark; }
+*,*::before,*::after{box-sizing:inherit}
+[hidden]{display:none !important}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;color:var(--ink);background-color:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px;
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;font-size:16px;line-height:1.6;-webkit-tap-highlight-color:transparent}
+h1,h2,.btn,.brand,.tb,.ctl,.mode button,.toast{font-family:"Jua","Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-weight:400}
+button{touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--pink);outline-offset:3px}
+.wrap{max-width:1040px;margin:0 auto;padding:16px 18px 48px}
+header.site{display:flex;align-items:center;justify-content:space-between;max-width:1040px;margin:0 auto;padding:14px 18px 0}
+.brand{display:flex;align-items:center;gap:10px;font-size:22px}
+.brand .logo{width:36px;height:36px;border:2.5px solid var(--ink);border-radius:10px 14px 9px 13px;background:var(--marker);display:grid;place-items:center;font-size:20px;transform:rotate(-4deg)}
+.icon-btn{background:none;border:2px solid var(--line);color:var(--ink);border-radius:12px;width:40px;height:40px;font-size:18px;cursor:pointer}
+.screen{display:none}.screen.active{display:block}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:18px;color:var(--ink);background:var(--surface);border:2.5px solid var(--ink);border-radius:14px 16px 13px 15px;padding:10px 18px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
+.btn:active{transform:translate(3px,3px);box-shadow:none}
+.btn.primary{background:var(--marker);color:var(--on-marker)}
+.btn.ghost{box-shadow:none;border-color:var(--line);background:transparent}
+
+.hero{display:grid;grid-template-columns:1.25fr 1fr;gap:28px;align-items:center;padding:28px 0 20px}
+.hero h1{font-size:clamp(40px,7.5vw,76px);line-height:1.05;margin:0 0 14px}
+.hero p{font-size:18px;color:var(--muted);max-width:30em;margin:0}
+.doodle{aspect-ratio:4/3;background:var(--surface);border:2.5px solid var(--ink);border-radius:18px 22px 16px 24px;overflow:hidden;transform:rotate(1.5deg);box-shadow:6px 6px 0 var(--ink)}
+.doodle svg{width:100%;height:100%;display:block}
+.hopper{animation:hop 2.4s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes hop{0%{transform:translate(0,0)}20%{transform:translate(70px,-62px)}40%{transform:translate(140px,0)}55%{transform:translate(185px,-8px)}70%{transform:translate(240px,-70px)}90%,100%{transform:translate(300px,-48px)}}
+@media (prefers-reduced-motion: reduce){.hopper{animation:none}}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:10px 0 30px}
+.action{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;cursor:pointer;padding:20px 22px;font:inherit;color:var(--ink);background:var(--surface);border:2.5px solid var(--ink);border-radius:18px 14px 20px 16px;box-shadow:4px 4px 0 var(--ink)}
+.action:active{transform:translate(4px,4px);box-shadow:none}
+.action.main{background:var(--marker);color:var(--on-marker)}
+.action .big{font-size:34px;line-height:1}
+.action .t{font-family:"Jua",sans-serif;font-size:24px}
+.action .s{font-size:15px;opacity:.8}
+.notes{display:grid;grid-template-columns:1.2fr 1fr;gap:18px}
+.note{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:18px 22px}
+.note h2{font-size:24px;margin:0 0 10px}
+.legend{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.legend li{display:grid;grid-template-columns:34px 64px 1fr;align-items:center;gap:8px}
+.sw{width:30px;height:16px;border-radius:9px 4px 10px 5px;background:var(--c);border:2px solid var(--ink)}
+.legend b{font-family:"Jua",sans-serif;font-weight:400;font-size:18px}
+.legend span,.tips{color:var(--muted);font-size:15px}
+.tips{margin:0;padding-left:1.2em}.tips li{margin-bottom:6px}
+
+/* STUDIO */
+#studio.active{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--paper);
+  padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
+.toolbar{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;padding:8px 12px;background:var(--surface);border-bottom:2px solid var(--line)}
+.tb{width:44px;height:44px;border-radius:12px;border:2px solid var(--ink);background:var(--surface);color:var(--ink);font-size:18px;cursor:pointer;flex:none}
+.mode{display:flex;border:2.5px solid var(--ink);border-radius:14px;overflow:hidden;flex:none}
+.mode button{font-size:19px;padding:8px 16px;border:none;background:var(--surface);color:var(--ink);cursor:pointer}
+.mode button.on{background:var(--marker);color:var(--on-marker)}
+.grow{flex:1;display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;min-width:0}
+.right{display:flex;gap:8px;margin-left:auto}
+.pens{display:flex;gap:8px;flex-wrap:wrap}
+.penbox{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:44px}
+.penbox small{font-size:12px;line-height:1;color:var(--muted);white-space:nowrap}
+.penbox.on small{color:var(--ink);font-weight:700}
+.pen{width:40px;height:40px;border-radius:50%;border:3px solid var(--surface);outline:2.5px solid var(--line);background:var(--c);cursor:pointer;font-size:17px;padding:0}
+.pen.on{outline:3px solid var(--ink);transform:scale(1.12)}
+.pen.eraser{background:#fff;color:#1d2340}
+.chip-btn{font:inherit;font-size:14px;padding:7px 12px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;white-space:nowrap}
+.chip-btn.on{border-color:var(--ink);background:var(--surface-2);font-weight:700}
+.group{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.stats{display:flex;gap:18px;font-family:"Jua",sans-serif;font-size:20px}
+#studio[data-mode="draw"] .play-only{display:none}
+#studio[data-mode="play"] .draw-only{display:none}
+.stage{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center;padding:8px}
+#gameCanvas{display:block;border:2.5px solid var(--ink);border-radius:10px;box-shadow:4px 4px 0 var(--ink);touch-action:none;background:#fff}
+#studio[data-mode="draw"] #gameCanvas{cursor:crosshair;border-style:dashed}
+.toast{position:absolute;top:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:12px;font-size:17px;max-width:90%;text-align:center;pointer-events:none;opacity:0;transition:opacity .25s}
+.toast.show{opacity:1}
+.overlay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(18,21,42,.35)}
+.overlay[hidden]{display:none}
+.win-card{background:var(--surface);border:3px solid var(--ink);border-radius:20px;box-shadow:6px 6px 0 var(--ink);padding:24px 26px;text-align:center;max-width:92%}
+.win-card h2{font-size:40px;margin:0}
+.stars{font-size:40px;letter-spacing:6px;color:#f0b400}
+.win-card p{color:var(--muted);margin:6px 0 18px}
+.row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.pad-controls{display:none;justify-content:space-between;align-items:center;padding:6px 18px 12px;user-select:none;-webkit-user-select:none}
+.dirs{display:flex;gap:14px}
+.ctl{width:80px;height:80px;border-radius:50%;border:3px solid var(--ink);background:var(--surface);color:var(--ink);font-size:28px;box-shadow:3px 3px 0 var(--ink);touch-action:none}
+.ctl.jump{width:100px;height:100px;background:var(--marker);color:var(--on-marker);font-size:24px}
+.ctl:active{transform:translate(3px,3px);box-shadow:none}
+.kbd-hint{text-align:center;color:var(--muted);font-size:14px;margin:0 0 8px}
+@media (pointer:coarse){ #studio[data-mode="play"] .pad-controls{display:flex} .kbd-hint{display:none} }
+.actions{grid-template-columns:repeat(3,1fr)}
+.gbar{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin:8px 0 10px}
+.gbar h2{margin:0;font-size:28px;text-align:center}
+.gmsg{color:var(--muted);text-align:center;min-height:1.6em}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.gcard{background:var(--surface);border:2.5px solid var(--ink);border-radius:16px 14px 18px 15px;box-shadow:4px 4px 0 var(--ink);overflow:hidden;display:flex;flex-direction:column}
+.gcard img{display:block;width:100%;aspect-ratio:3/2;object-fit:cover;background:#fff;border-bottom:2px solid var(--line)}
+.gcard .gi{padding:10px 14px 12px;display:flex;flex-direction:column;gap:2px;flex:1}
+.gcard h3{margin:0;font-family:"Jua",sans-serif;font-weight:400;font-size:20px;line-height:1.3;overflow-wrap:anywhere}
+.gcard .by{color:var(--muted);font-size:14px}
+.gcard .mine{display:inline-block;background:var(--marker);color:var(--on-marker);font-size:12px;border-radius:6px;padding:0 6px;margin-left:6px}
+.gcard .ga{display:flex;gap:8px;margin-top:10px;align-items:center}
+.gcard .ga .btn{padding:7px 14px;font-size:16px}
+.del{margin-left:auto;font:inherit;font-size:13px;color:var(--muted);background:none;border:1.5px solid var(--line);border-radius:999px;padding:5px 10px;cursor:pointer}
+.del.sure{color:#fff;background:#d33;border-color:#d33}
+.share-card{display:flex;flex-direction:column;gap:12px;text-align:left;width:min(440px,92%)}
+.share-card h2{font-size:30px;text-align:center}
+.share-card label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:15px}
+.share-card input{font:inherit;font-size:17px;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+.share-card input:focus{outline:3px solid var(--pink);outline-offset:1px}
+.share-card .small{margin:0;font-size:13px;color:var(--muted)}
+.share-card .status{margin:0;min-height:1.4em;font-weight:600;text-align:center}
+.share-card .row .btn{font-size:16px;padding:8px 14px}
+#join.active{display:grid;place-items:center;min-height:70vh}
+.joinbox{width:min(440px,100%);background:var(--surface);border:2.5px solid var(--ink);border-radius:20px 16px 22px 18px;box-shadow:6px 6px 0 var(--ink);padding:26px 26px 18px;display:flex;flex-direction:column;gap:14px}
+.joinbox h1{margin:0 0 4px;font-size:36px;line-height:1.15}
+.joinbox label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:15px}
+.joinbox input{font:inherit;font-size:20px;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink)}
+#joinCode{letter-spacing:.2em;font-family:"Jua",sans-serif;font-size:24px}
+.joinbox input:focus{outline:3px solid var(--pink);outline-offset:1px}
+.joinbox .btn{font-size:21px;padding:13px}
+.err{color:#d33;font-weight:600;margin:0;min-height:1.4em}
+.notice{margin:0;font-size:13px;color:var(--muted);background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.plain-link{background:none;border:none;color:var(--muted);font:inherit;font-size:14px;text-decoration:underline;cursor:pointer;padding:4px}
+.who{display:flex;gap:10px;align-items:center;justify-content:flex-end;font-size:15px;color:var(--muted);margin-top:4px}
+#studio .overlay{z-index:5}
+.q-card{width:min(640px,94%);max-height:86vh;overflow:auto;text-align:left;display:flex;flex-direction:column;gap:10px}
+.q-card h2,.door-card h2{font-size:28px;text-align:center}
+.qlist{display:grid;gap:12px}
+.qitem{border:2px solid #ff7a00;border-radius:14px;padding:10px 12px;display:grid;gap:6px;background:color-mix(in srgb,#ff7a00 6%,var(--surface))}
+.qitem h3{margin:0;font-family:"Jua",sans-serif;font-weight:400;font-size:20px;color:#c25a00}
+.qitem label{display:flex;flex-direction:column;gap:3px;font-weight:600;font-size:14px}
+.qitem textarea,.qitem input,.door-card input{font:inherit;font-size:17px;padding:9px 11px;border:2px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);resize:vertical}
+.qitem textarea{min-height:60px}
+.qitem textarea:focus,.qitem input:focus,.door-card input:focus{outline:3px solid var(--pink);outline-offset:1px}
+.ai{margin:0;font-size:14px;border-radius:8px;padding:6px 10px;background:var(--surface-2)}
+.ai.ok{background:color-mix(in srgb,#2e9e4b 15%,var(--surface));}
+.ai.bad{background:color-mix(in srgb,#e5484d 14%,var(--surface));}
+.ai.warn{background:color-mix(in srgb,#e8a317 16%,var(--surface));}
+.keys{display:flex;flex-wrap:wrap;gap:6px}
+.keys button{font:inherit;font-size:17px;min-width:42px;padding:5px 10px;border:2px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);cursor:pointer}
+.door-card{width:min(520px,94%);display:flex;flex-direction:column;gap:10px}
+.doorq{font-size:22px;line-height:1.5;margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere;text-align:center}
+.door-card input{font-size:22px;text-align:center}
+.door-btn{border-color:#ff7a00}
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:15px}
+.checks li.no{color:#d33}
+#gridBtn[aria-pressed="false"]{opacity:.45}
+@media (max-width:760px){ .hero{grid-template-columns:1fr} .doodle{max-width:420px} .actions,.notes{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="brand"><span class="logo">🖍️</span><span>도화지 아케이드</span></div>
+  <button class="icon-btn" id="themeBtn" aria-label="밝게/어둡게 바꾸기">🌓</button>
+</header>
+
+<main class="wrap">
+<section id="join" class="screen active">
+  <div class="joinbox">
+    <h1>우리 반 게임방<br>들어가기</h1>
+    <label>반 코드<input id="joinCode" maxlength="6" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="선생님이 알려 준 코드"></label>
+    <label>내 이름<input id="joinName" maxlength="16" autocomplete="off" placeholder="예: 12번 김민지"></label>
+    <button class="btn primary" id="joinBtn">입장하기</button>
+    <p class="err" id="joinErr"></p>
+    <p class="notice">입장하면 선생님 화면에 내 이름, 접속 상태, 앱을 벗어난 횟수와 시간, 제출한 맵이 보여요.</p>
+    <button class="plain-link" id="practiceBtn">입장하지 않고 연습만 하기</button>
+  </div>
+</section>
+
+<section id="home" class="screen">
+  <div class="who"><span id="whoText"></span><button class="chip-btn" id="leaveBtn">반·이름 바꾸기</button></div>
+  <div class="hero">
+    <div>
+      <h1>그리면서<br>노는 게임</h1>
+      <p>태블릿에 손가락이나 펜으로 맵을 그리고 바로 뛰어 보세요. 막히는 곳이 있으면 게임 중에 그림을 고치고 이어서 하면 돼요.</p>
+    </div>
+    <div class="doodle" aria-hidden="true">
+      <svg viewBox="0 0 400 300">
+        <path d="M20 230 Q90 226 150 232" stroke="#1d2340" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M150 260 L205 260" stroke="#e53935" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <path d="M205 232 Q250 228 290 232" stroke="#1d2340" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M300 176 Q340 172 385 178" stroke="#1d2340" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <circle cx="120" cy="150" r="10" fill="#f9b80e" stroke="#1d2340" stroke-width="2.5"/>
+        <circle cx="262" cy="150" r="10" fill="#f9b80e" stroke="#1d2340" stroke-width="2.5"/>
+        <path d="M360 172 L360 110" stroke="#1e7fe0" stroke-width="6" stroke-linecap="round"/>
+        <path d="M362 110 L392 124 L362 138 Z" fill="#1e7fe0"/>
+        <g class="hopper">
+          <rect x="32" y="196" width="28" height="32" rx="12" fill="#fff" stroke="#1d2340" stroke-width="3"/>
+          <circle cx="42" cy="208" r="2.6" fill="#1d2340"/><circle cx="52" cy="208" r="2.6" fill="#1d2340"/>
+          <ellipse cx="38" cy="216" rx="3" ry="2" fill="#ff9ec0"/><ellipse cx="56" cy="216" rx="3" ry="2" fill="#ff9ec0"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="action main" id="newBtn"><span class="big">✏️</span><span class="t">새로 그리기</span><span class="s">빈 도화지에서 맵을 그려요</span></button>
+    <button class="action" id="exampleStart"><span class="big">🎲</span><span class="t">예시 맵으로 시작</span><span class="s">먼저 놀아 보고 마음대로 고쳐요</span></button>
+    <button class="action" id="galleryOpen"><span class="big">🏫</span><span class="t">학급 갤러리</span><span class="s">친구들이 제출한 맵을 해 봐요</span></button>
+  </div>
+  <div class="notes">
+    <div class="note">
+      <h2>색깔 규칙</h2>
+      <ul class="legend">
+        <li><i class="sw" style="--c:#25222c"></i><b>검정</b><span>발판과 벽. 밟고 설 수 있어요</span></li>
+        <li><i class="sw" style="--c:#e53935"></i><b>빨강</b><span>용암. 닿으면 출발점으로 돌아가요</span></li>
+        <li><i class="sw" style="--c:#f5cf00"></i><b>노랑</b><span>코인. 동그라미 하나가 코인 하나예요</span></li>
+        <li><i class="sw" style="--c:#ff7a00"></i><b>주황</b><span>문제 문. 문제를 풀어야 지나갈 수 있어요</span></li>
+        <li><i class="sw" style="--c:#2e9e4b"></i><b>초록</b><span>출발점. 캐릭터가 여기서 시작해요</span></li>
+        <li><i class="sw" style="--c:#1e7fe0"></i><b>파랑</b><span>도착점. 닿으면 클리어!</span></li>
+        <li><i class="sw" style="--c:#8e2bb0"></i><b>보라</b><span>점프대. 밟으면 높이 튕겨 올라요</span></li>
+      </ul>
+    </div>
+    <div class="note">
+      <h2>이렇게 놀아요</h2>
+      <ol class="tips">
+        <li>✏️ 그리기에서 맵을 그리고 ▶ 플레이를 눌러요.</li>
+        <li>하다가 막히면 ✏️ 그리기를 눌러요. 캐릭터는 그 자리에 멈춰 있어요.</li>
+        <li>발판을 더 그리거나 지우고 ▶ 플레이를 누르면 멈춘 곳에서 이어서 해요.</li>
+        <li>주황색 문을 1개 이상 그리고 🚪 문제 넣기로 문제와 정답을 써요. AI가 문제와 정답에 이상이 없는지 검사해 줘요.</li>
+        <li>다 만들면 📮 버튼으로 선생님께 제출해요.</li>
+        <li>태블릿 펜을 쓰면 손바닥이 닿아도 그려지지 않게 펜만 그리기가 자동으로 켜져요.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section id="gallery" class="screen">
+  <div class="gbar">
+    <button class="btn ghost" id="galleryBack">← 처음으로</button>
+    <h2>학급 갤러리</h2>
+    <button class="btn" id="fileOpen2">📂 파일 불러오기</button>
+  </div>
+  <p class="gmsg" id="galleryMsg"></p>
+  <div class="ggrid" id="galleryGrid"></div>
+</section>
+</main>
+<input type="file" id="fileInput" accept="image/*" hidden>
+
+<section id="studio" class="screen" data-mode="draw">
+  <div class="toolbar">
+    <button class="tb" id="exitBtn" aria-label="처음 화면으로">✕</button>
+    <div class="mode" id="modeSeg">
+      <button data-m="draw" class="on">✏️ 그리기</button>
+      <button data-m="play">▶ 플레이</button>
+    </div>
+    <div class="grow draw-only">
+      <div class="pens" id="pens"></div>
+      <div class="group" id="sizes">
+        <button class="chip-btn" data-s="8">얇게</button>
+        <button class="chip-btn on" data-s="14">보통</button>
+        <button class="chip-btn" data-s="26">굵게</button>
+      </div>
+      <div class="group">
+        <button class="chip-btn" id="undoBtn">↶ 되돌리기</button>
+        <button class="chip-btn" id="clearBtn">모두 지우기</button>
+        <button class="chip-btn" id="penOnlyBtn" aria-pressed="false">✒️ 펜만 그리기</button>
+        <button class="chip-btn door-btn" id="qBtn">🚪 문제 넣기</button>
+      </div>
+    </div>
+    <div class="grow play-only">
+      <div class="stats">
+        <span>🪙 <b id="hCoins">0/0</b></span>
+        <span>⏱ <b id="hTime">0.0</b>초</span>
+        <span>💥 <b id="hDeaths">0</b></span>
+      </div>
+    </div>
+    <div class="right">
+      <button class="tb" id="gridBtn" aria-label="좌표 눈금 켜고 끄기" aria-pressed="true">📐</button>
+      <button class="tb" id="shareBtn" aria-label="맵 제출하기">📮</button>
+      <button class="tb" id="muteBtn" aria-label="소리 켜고 끄기">🔊</button>
+      <button class="tb play-only" id="restartBtn" aria-label="출발점에서 다시">↺</button>
+    </div>
+  </div>
+  <div class="stage" id="stage">
+    <canvas id="gameCanvas" aria-label="게임 화면"></canvas>
+    <div class="toast" id="toast"></div>
+    <div class="overlay" id="qOverlay" hidden>
+      <div class="win-card q-card" role="dialog" aria-label="문 문제 넣기">
+        <h2>🚪 주황 문 문제 넣기</h2>
+        <p class="small">문마다 플레이어가 풀 문제와 정답을 써요. 답이 여러 개면 쉼표(,)로, 같은 답을 다르게 써도 되면 세미콜론(;)으로 나눠요. 예: <b>2, 3</b> 또는 <b>1/2; 0.5</b></p>
+        <div class="keys" id="qKeys"></div>
+        <div class="qlist" id="qList"></div>
+        <p class="status" id="qStatus"></p>
+        <div class="row">
+          <button class="btn primary" id="aiCheckBtn">🤖 AI에게 검사받기</button>
+          <button class="btn ghost" id="qClose">닫기</button>
+        </div>
+      </div>
+    </div>
+    <div class="overlay" id="doorOverlay" hidden>
+      <div class="win-card door-card" role="dialog" aria-label="문 문제 풀기">
+        <h2 id="doorTitle">🚪 문을 열려면 문제를 풀어요</h2>
+        <p class="doorq" id="doorQ"></p>
+        <input id="doorInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="답을 써요">
+        <div class="keys" id="doorKeys"></div>
+        <p class="status" id="doorFb"></p>
+        <div class="row">
+          <button class="btn primary" id="doorOk">확인</button>
+          <button class="btn ghost" id="doorLater">나중에 풀기</button>
+        </div>
+      </div>
+    </div>
+    <div class="overlay" id="shareOverlay" hidden>
+      <div class="win-card share-card" role="dialog" aria-label="맵 제출하기">
+        <h2>맵 제출하기</h2>
+        <label>게임 이름<input id="shareTitle" maxlength="30" placeholder="예: 용암 점프 대모험"></label>
+        <p class="small" id="shareWho"></p>
+        <ul class="checks" id="shareChecks"></ul>
+        <button class="btn primary" id="shareUpload">📮 선생님께 제출하기</button>
+        <p class="small">다시 제출하면 마지막에 낸 맵으로 바뀌어요.</p>
+        <div class="row">
+          <button class="btn" id="saveFile">💾 그림 파일로 저장</button>
+          <button class="btn" id="fileOpen">📂 그림 파일 불러오기</button>
+        </div>
+        <p class="status" id="shareStatus"></p>
+        <button class="btn ghost" id="shareClose">닫기</button>
+      </div>
+    </div>
+    <div class="overlay" id="winOverlay" hidden>
+      <div class="win-card">
+        <div class="stars" id="stars">★★★</div>
+        <h2>클리어!</h2>
+        <p id="winStats"></p>
+        <div class="row">
+          <button class="btn primary" id="againBtn">다시 하기</button>
+          <button class="btn" id="editBtn">✏️ 맵 고치기</button>
+          <button class="btn" id="winShare">📮 제출</button>
+          <button class="btn ghost" id="homeBtn">새 그림</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pad-controls">
+    <div class="dirs">
+      <button class="ctl" data-k="left" aria-label="왼쪽">◀</button>
+      <button class="ctl" data-k="right" aria-label="오른쪽">▶</button>
+    </div>
+    <button class="ctl jump" data-k="jump">점프</button>
+  </div>
+  <p class="kbd-hint play-only">← → 이동, 스페이스 점프, E 그리기로 바꾸기, R 출발점으로</p>
+  <p class="kbd-hint draw-only">E 또는 Enter로 플레이, Ctrl+Z 되돌리기</p>
+</section>
+
+<script type="module">
+let initializeApp, getAuth, signInAnonymously, getDatabase, ref, get, set, update, onValue, onDisconnect, serverTimestamp, increment;
+import * as CFG from "./firebase-config.js";
+const firebaseConfig = CFG.firebaseConfig;
+const FB_CDN = "https://www.gstatic.com/firebasejs/12.18.0/";
+(() => {
+const $ = s => document.querySelector(s);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+
+$('#themeBtn').addEventListener('click', () => {
+  const r=document.documentElement;
+  const cur=r.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+  r.dataset.theme = cur==='dark'?'light':'dark';
+});
+
+/* ---------- drawing surface (off-screen) ---------- */
+const PADW=1200, PADH=800, COLS=56, ROWS=Math.round(COLS*PADH/PADW);
+const pad=document.createElement('canvas'); pad.width=PADW; pad.height=PADH;
+const pctx=pad.getContext('2d', { willReadFrequently:true });
+function padFill(){ pctx.fillStyle='#ffffff'; pctx.fillRect(0,0,PADW,PADH); }
+padFill();
+
+/* =========================================================
+   DRAWING → LEVEL   codes: 0 empty,1 solid,2 lava,3 coin,4 start,5 goal,6 bounce
+   ========================================================= */
+function tileAt(lv,tx,ty){ if(tx<0||tx>=lv.cols) return 1; if(ty<0||ty>=lv.rows) return 0; return lv.map[ty*lv.cols+tx]; }
+const isSolid=t=>t===1||t===6||t===7;
+function boxFree(lv,x,y,w,h){ const x0=Math.floor(x),x1=Math.floor(x+w-1e-6),y0=Math.floor(y),y1=Math.floor(y+h-1e-6);
+  for(let ty=y0;ty<=y1;ty++)for(let tx=x0;tx<=x1;tx++) if(isSolid(tileAt(lv,tx,ty))) return false; return true; }
+function boxHas(lv,x,y,w,h,code){ const x0=Math.floor(x),x1=Math.floor(x+w-1e-6),y0=Math.floor(y),y1=Math.floor(y+h-1e-6);
+  for(let ty=y0;ty<=y1;ty++)for(let tx=x0;tx<=x1;tx++) if(tileAt(lv,tx,ty)===code) return true; return false; }
+function comps(map,cols,rows,code){
+  const seen=new Uint8Array(map.length),out=[];
+  for(let i=0;i<map.length;i++){ if(map[i]!==code||seen[i]) continue;
+    const cells=[],q=[i]; seen[i]=1;
+    while(q.length){ const c=q.pop(); cells.push(c); const cx=c%cols, cy=(c/cols)|0;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){ const nx=cx+dx,ny=cy+dy; if(nx<0||ny<0||nx>=cols||ny>=rows) continue; const n=ny*cols+nx; if(!seen[n]&&map[n]===code){seen[n]=1;q.push(n);} } }
+    out.push(cells); }
+  return out;
+}
+function centroid(cells,cols){ let sx=0,sy=0; for(const c of cells){sx+=c%cols; sy+=(c/cols)|0;} return {x:sx/cells.length+.5,y:sy/cells.length+.5}; }
+function hueClass(h){ if(h<16||h>=330) return 2; if(h<40) return 7; if(h<70) return 3; if(h<165) return 4; if(h<255) return 5; return 6; }
+function physFor(cols){ const k=cols/56; return { k, pw:1.25*k, ph:1.6*k, acc:75*k, air:50*k, max:8.5*k, fric:70*k, grav:58*k, jump:22*k, fall:26*k, bounce:40*k, step:Math.max(1,Math.round(k*1.2)) }; }
+
+function analyze(){
+  const cols=COLS, rows=ROWS, P=6, W=cols*P, H=rows*P;
+  const c=document.createElement('canvas'); c.width=W; c.height=H;
+  const x=c.getContext('2d',{willReadFrequently:true}); x.imageSmoothingEnabled=true; x.imageSmoothingQuality='high';
+  x.drawImage(pad,0,0,W,H);
+  const d=x.getImageData(0,0,W,H).data;
+  const cnt=new Uint16Array(cols*rows*8);
+  for(let py=0;py<H;py++){ const cy=(py/P)|0;
+    for(let px=0;px<W;px++){ const j=(py*W+px)*4,r=d[j],g=d[j+1],b=d[j+2];
+      const mx=Math.max(r,g,b),mn=Math.min(r,g,b),chr=mx-mn; let cl=0;
+      if(chr>36 && chr/mx>0.33){ let h; if(mx===r) h=((g-b)/chr)%6; else if(mx===g) h=(b-r)/chr+2; else h=(r-g)/chr+4; h*=60; if(h<0)h+=360; cl=hueClass(h); }
+      else if(mx/255<0.62) cl=1;
+      cnt[(cy*cols+((px/P)|0))*8+cl]++; } }
+  const area=P*P, fill=0.18, map=new Uint8Array(cols*rows), frac=new Float32Array(cols*rows);
+  for(let i=0;i<map.length;i++){ let bc=0,bn=0; for(let k=2;k<=7;k++) if(cnt[i*8+k]>bn){bn=cnt[i*8+k];bc=k;}
+    if(bn>=area*fill*0.8){map[i]=bc;frac[i]=bn/area;} else if(cnt[i*8+1]>=area*fill){map[i]=1;frac[i]=cnt[i*8+1]/area;} }
+  for(const code of [2,3,4,5,6,7]) for(const cc of comps(map,cols,rows,code)) if(cc.length===1&&frac[cc[0]]<0.4) map[cc[0]]=0;
+
+  const PH0=physFor(cols);
+  const lv={cols,rows,map,k:PH0.k,coins:[],spawn:null,goal:null,hazards:[],warnings:[]};
+  lv.doors=[]; lv.doorIdx=new Int16Array(cols*rows).fill(-1);
+  comps(map,cols,rows,7).map(cc=>({cells:cc,c:centroid(cc,cols)})).sort((a,b)=>a.c.x-b.c.x||a.c.y-b.c.y).forEach((d,i)=>{
+    lv.doors.push({cells:d.cells,x:d.c.x,y:d.c.y,no:i+1,open:false,qi:-1}); d.cells.forEach(c=>lv.doorIdx[c]=i); });
+  for(const cc of comps(map,cols,rows,3)){ const ce=centroid(cc,cols); lv.coins.push({x:ce.x,y:ce.y,got:false,cells:cc}); cc.forEach(i=>map[i]=0); }
+  if(lv.coins.length>80) lv.coins.length=80;
+  const starts=comps(map,cols,rows,4).sort((a,b)=>b.length-a.length);
+  if(starts.length){ const ce=centroid(starts[0],cols); starts.forEach(cc=>cc.forEach(i=>map[i]=0));
+    const sp={x:clamp(ce.x-PH0.pw/2,0,cols-PH0.pw),y:ce.y-PH0.ph/2}; let gd=0; while(!boxFree(lv,sp.x,sp.y,PH0.pw,PH0.ph)&&gd++<rows*4) sp.y-=.25; lv.spawn=sp; }
+  else { lv.warnings.push('초록 출발점이 없어서 왼쪽 위에서 시작해요');
+    outer: for(let xx=.2;xx<cols*.5;xx+=.5) for(let yy=.2;yy<rows-PH0.ph;yy+=.5) if(boxFree(lv,xx,yy,PH0.pw,PH0.ph)){lv.spawn={x:xx,y:yy};break outer;}
+    if(!lv.spawn) lv.spawn={x:1,y:0}; }
+  const goals=comps(map,cols,rows,5).sort((a,b)=>b.length-a.length);
+  if(goals.length) lv.goal=centroid(goals[0],cols);
+  else lv.warnings.push('파란 도착점이 아직 없어요');
+  let solid=0; for(let i=0;i<map.length;i++){ if(map[i]===1||map[i]===6) solid++; else if(map[i]===2) lv.hazards.push(i); }
+  if(solid<10) lv.warnings.push('검은 발판을 그려 주세요');
+  return lv;
+}
+
+/* =========================================================
+   RENDER
+   ========================================================= */
+const INK='#26243a';
+function buildStatic(lv,ts,dpr){
+  const cv=document.createElement('canvas'); cv.width=Math.ceil(lv.cols*ts*dpr); cv.height=Math.ceil(lv.rows*ts*dpr);
+  const x=cv.getContext('2d'); x.scale(dpr,dpr);
+  const W=lv.cols*ts, H=lv.rows*ts;
+  x.drawImage(pad,0,0,W,H);
+  x.fillStyle='#ffffff';
+  for(const c of lv.coins) for(const i of c.cells){ const tx=i%lv.cols, ty=(i/lv.cols)|0; x.fillRect((tx-.4)*ts,(ty-.4)*ts,ts*1.8,ts*1.8); }
+  for(const d of lv.doors) if(d.open) for(const i of d.cells){ const tx=i%lv.cols, ty=(i/lv.cols)|0; x.fillRect((tx-.4)*ts,(ty-.4)*ts,ts*1.8,ts*1.8); }
+  x.fillStyle='#25222c'; for(const d of lv.doors) if(d.open&&d.keep) for(const i of d.keep){ const tx=i%lv.cols, ty=(i/lv.cols)|0; x.fillRect(tx*ts-1,ty*ts+ts*.15,ts+2,ts*.7); }
+  x.fillStyle='#ffffff';
+  x.strokeStyle='rgba(255,122,0,.6)'; x.setLineDash([4,4]); x.lineWidth=1.5;
+  for(const d of lv.doors) if(d.open) for(const i of d.cells){ if(d.keep&&d.keep.has(i)) continue; const tx=i%lv.cols, ty=(i/lv.cols)|0; x.strokeRect(tx*ts+1,ty*ts+1,ts-2,ts-2); }
+  x.setLineDash([]); x.fillStyle='#ffffff';
+  x.fillStyle='rgba(38,36,58,.10)';
+  for(let i=0;i<lv.map.length;i++) if(lv.map[i]===1){ const tx=i%lv.cols, ty=(i/lv.cols)|0; x.fillRect(tx*ts,ty*ts,ts+.5,ts+.5); }
+  return cv;
+}
+function rr(ctx,x,y,w,h,r){ r=Math.min(r,w/2,h/2); ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+function doorBadge(ctx,d,ts,label,ok){
+  const top=Math.min(...d.cells.map(i=>(i/COLS)|0));
+  const x=d.x*ts, y=Math.max(12,top*ts-12);
+  ctx.font=`${Math.max(12,ts*.9)}px "Jua",sans-serif`; const w=ctx.measureText(label).width+12, h=Math.max(18,ts*1.2);
+  rr(ctx,x-w/2,y-h/2,w,h,h/2); ctx.fillStyle=ok?'#ff7a00':'#ffffff'; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle='#ff7a00'; ctx.stroke();
+  ctx.fillStyle=ok?'#ffffff':'#b45300'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(label,x,y+1);
+}
+function drawDynamic(ctx,lv,ts,t){
+  const k=lv.k;
+  for(const d of lv.doors) if(!d.open){ const qd=doorQs[d.qi]; doorBadge(ctx,d,ts,`🚪${d.no}`,!!(qd&&qd.q&&qd.a)); }
+  for(const i of lv.hazards){ const tx=i%lv.cols, ty=(i/lv.cols)|0; ctx.fillStyle=`rgba(255,214,120,${.12+.14*Math.sin(t*4+tx*.9+ty*.6)})`; ctx.fillRect(tx*ts,ty*ts,ts+.5,ts*.5); }
+  if(lv.goal){ const p=(Math.sin(t*3)+1)/2; ctx.beginPath(); ctx.arc(lv.goal.x*ts,lv.goal.y*ts,(1.6+p*.5)*k*ts,0,Math.PI*2); ctx.fillStyle=`rgba(59,130,246,${.12+p*.12})`; ctx.fill(); }
+  for(const c of lv.coins){ if(c.got) continue;
+    const cx=c.x*ts, cy=(c.y+Math.sin(t*3+c.x)*.12*k)*ts, r=.6*k*ts, sx=Math.max(.25,Math.abs(Math.cos(t*2.4+c.x*.7)));
+    ctx.save(); ctx.translate(cx,cy); ctx.scale(sx,1); ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fillStyle='#f6c026'; ctx.fill();
+    ctx.lineWidth=Math.max(1.2,r*.22); ctx.strokeStyle='#a8790a'; ctx.stroke(); ctx.fillStyle='rgba(255,255,255,.7)'; ctx.fillRect(-r*.15,-r*.5,r*.3,r); ctx.restore(); }
+}
+function drawPlayer(ctx,p,ts,t,alpha){
+  const w=p.w*ts,h=p.h*ts,s=p.squash||0,sw=w*(1+s*.7),sh=h*(1-s*.6),bx=(p.x+p.w/2)*ts,by=(p.y+p.h)*ts;
+  ctx.save(); ctx.translate(bx,by); ctx.globalAlpha=alpha;
+  ctx.fillStyle='rgba(0,0,0,.12)'; ctx.beginPath(); ctx.ellipse(0,0,sw*.45,sw*.1,0,0,Math.PI*2); ctx.fill();
+  rr(ctx,-sw/2,-sh,sw,sh,Math.min(sw,sh)*.45); ctx.fillStyle='#fff'; ctx.fill(); ctx.lineWidth=Math.max(1.6,w*.13); ctx.strokeStyle=INK; ctx.stroke();
+  const f=p.face||1, ex=f*sw*.1, ey=-sh*.6, er=Math.max(1.2,sw*.075), blink=(Math.floor(t*10)%38)===0;
+  ctx.fillStyle=INK;
+  for(const dx of [-.17,.17]){ if(blink) ctx.fillRect(dx*sw+ex-er,ey-er*.2,er*2,Math.max(1,er*.4)); else { ctx.beginPath(); ctx.arc(dx*sw+ex,ey,er,0,Math.PI*2); ctx.fill(); } }
+  ctx.fillStyle='#ff9ec0'; for(const dx of [-.3,.3]){ ctx.beginPath(); ctx.ellipse(dx*sw+ex,-sh*.42,sw*.08,sw*.05,0,0,Math.PI*2); ctx.fill(); }
+  ctx.restore();
+}
+
+/* =========================================================
+   STUDIO STATE
+   ========================================================= */
+const studio=$('#studio'), gc=$('#gameCanvas'), g=gc.getContext('2d');
+const G={running:false,raf:0,last:0,acc:0,keys:{left:false,right:false,jump:false}};
+const PH=physFor(COLS);
+let mode='draw', L=null, P=null, gstate='play', tTime=0, deaths=0, particles=[], shake=0, deadTimer=0, coyote=0, jumpBuf=0, winTimer=0;
+let paused=false, doorCool=0, openedQ=new Set(), doorQs=[], drawDoors=[], gridOn=true, hover=null;
+let gts=10, gStatic=null, gW=0, gH=0, dpr=1;
+
+function showScreen(id){
+  if(id!=='studio') reportMode(id);
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+  if(id==='studio'){ G.running=true; G.last=performance.now(); cancelAnimationFrame(G.raf); G.raf=requestAnimationFrame(loop); }
+  else { G.running=false; cancelAnimationFrame(G.raf); }
+}
+function openStudio(startMode){
+  openedQ.clear(); drawDoors=[]; L=null; P=null; tTime=0; deaths=0; particles=[]; gstate='play'; $('#winOverlay').hidden=true; undo=[];
+  showScreen('studio'); setMode(startMode);
+}
+function setMode(m){
+  mode=m; studio.dataset.mode=m; reportMode(m);
+  $('#modeSeg').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  G.keys.left=G.keys.right=G.keys.jump=false;
+  if(m==='play'){
+    $('#winOverlay').hidden=true;
+    rebuildLevel();
+  } else {
+    stroke=null; refreshDrawDoors();
+    if(gstate==='won'){ $('#winOverlay').hidden=true; }
+    toast('맵을 고치고 ▶ 플레이를 누르면 이어서 해요');
+  }
+  requestAnimationFrame(resize);
+}
+function rebuildLevel(){
+  const old=L; L=analyze(); syncDoors(L);
+  for(const d of L.doors) if(openedQ.has(d.qi)){ d.open=true; applyOpen(L,d); }
+  const missingQ=L.doors.filter(d=>{ const q=doorQs[d.qi]; return !(q&&q.q.trim()&&q.a.trim()); });
+  if(old){ for(const nc of L.coins) if(old.coins.some(oc=>oc.got&&Math.hypot(oc.x-nc.x,oc.y-nc.y)<1)) nc.got=true; }
+  if(gstate==='won' || !P){ if(gstate==='won'){ tTime=0; deaths=0; L.coins.forEach(c=>c.got=false); } spawnPlayer(); gstate='play'; }
+  else if(gstate==='dead'){ spawnPlayer(); gstate='play'; }
+  else if(!boxFree(L,P.x,P.y,P.w,P.h) || boxHas(L,P.x,P.y,P.w,P.h,2)){
+    let moved=false; for(let s=.25;s<6;s+=.25){ if(boxFree(L,P.x,P.y-s,P.w,P.h)&&!boxHas(L,P.x,P.y-s,P.w,P.h,2)){ P.y-=s; moved=true; break; } }
+    if(!moved){ spawnPlayer(); toast('캐릭터 자리에 그림이 생겨서 출발점으로 옮겼어요'); }
+  }
+  const warn=L.warnings.slice(); if(missingQ.length) warn.push(`${missingQ.map(d=>d.no).join(', ')}번 문에 아직 문제가 없어요`);
+  if(warn.length) toast(warn.join(' · '), 2800); else $('#toast').classList.remove('show');
+  gStatic = gW ? buildStatic(L,gts,dpr) : null;
+}
+function spawnPlayer(){ P={x:L.spawn.x,y:L.spawn.y,w:PH.pw,h:PH.ph,vx:0,vy:0,grounded:false,face:1,squash:0,jumping:false}; coyote=0; jumpBuf=0; }
+function resetRun(){ if(!L) return; if(openedQ.size){ openedQ.clear(); L=null; rebuildLevel(); } L.coins.forEach(c=>c.got=false); tTime=0; deaths=0; particles=[]; winTimer=0; spawnPlayer(); gstate='play'; $('#winOverlay').hidden=true; }
+function resize(){
+  if(!studio.classList.contains('active')) return;
+  const st=$('#stage'), cw=st.clientWidth-20, ch=st.clientHeight-16;
+  gts=Math.max(2,Math.min(cw/COLS,ch/ROWS)); gW=Math.floor(COLS*gts); gH=Math.floor(ROWS*gts); dpr=Math.min(2,window.devicePixelRatio||1);
+  gc.width=gW*dpr; gc.height=gH*dpr; gc.style.width=gW+'px'; gc.style.height=gH+'px';
+  if(L) gStatic=buildStatic(L,gts,dpr);
+}
+window.addEventListener('resize',()=>requestAnimationFrame(resize));
+let toastT=0;
+function toast(msg,ms=1900){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),ms); }
+
+/* =========================================================
+   DRAWING ON THE GAME CANVAS
+   ========================================================= */
+const PENS=[{c:'#25222c',n:'검정 발판'},{c:'#e53935',n:'빨강 용암'},{c:'#f5cf00',n:'노랑 코인'},{c:'#ff7a00',n:'주황 문'},{c:'#2e9e4b',n:'초록 출발점'},{c:'#1e7fe0',n:'파랑 도착점'},{c:'#8e2bb0',n:'보라 점프대'},{c:'eraser',n:'지우개'}];
+const pen={color:'#25222c',size:14};
+let undo=[], stroke=null, penOnly=false, penSeen=false;
+PENS.forEach((p,i)=>{
+  const b=document.createElement('button'); b.className='pen'+(p.c==='eraser'?' eraser':'')+(i===0?' on':'');
+  if(p.c!=='eraser') b.style.setProperty('--c',p.c); else b.textContent='⌫';
+  b.setAttribute('aria-label',p.n); b.title=p.n;
+  const box=document.createElement('div'); box.className='penbox'+(i===0?' on':'');
+  const cap=document.createElement('small'); cap.textContent=p.n.split(' ').pop();
+  b.addEventListener('click',()=>{ $('#pens').querySelectorAll('.pen').forEach(x=>x.classList.remove('on')); $('#pens').querySelectorAll('.penbox').forEach(x=>x.classList.remove('on')); b.classList.add('on'); box.classList.add('on'); pen.color=p.c; toast(p.n,900); });
+  box.append(b,cap); $('#pens').appendChild(box);
+});
+$('#sizes').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; $('#sizes').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b)); pen.size=+b.dataset.s; });
+function setPenOnly(v){ penOnly=v; const b=$('#penOnlyBtn'); b.classList.toggle('on',v); b.setAttribute('aria-pressed',String(v)); }
+$('#penOnlyBtn').addEventListener('click',()=>{ setPenOnly(!penOnly); toast(penOnly?'펜으로만 그려요. 손 터치는 무시해요':'손가락으로도 그릴 수 있어요'); });
+function pushUndo(){ try{ undo.push(pctx.getImageData(0,0,PADW,PADH)); if(undo.length>12) undo.shift(); }catch(e){} }
+function doUndo(){ const s=undo.pop(); if(s){ pctx.putImageData(s,0,0); } else toast('더 되돌릴 게 없어요',900); }
+$('#undoBtn').addEventListener('click',()=>{ doUndo(); refreshDrawDoors(); });
+$('#clearBtn').addEventListener('click',()=>{ pushUndo(); padFill(); refreshDrawDoors(); toast('모두 지웠어요. 되돌리기로 살릴 수 있어요'); });
+function padPt(e){ const r=gc.getBoundingClientRect(); return {x:(e.clientX-r.left)*PADW/r.width, y:(e.clientY-r.top)*PADH/r.height}; }
+function widthFor(e){ const er=pen.color==='eraser'; let w=er?pen.size*2.4:pen.size; if(e.pointerType==='pen' && e.pressure>0) w*=0.6+e.pressure*0.8; return w; }
+gc.addEventListener('pointerdown',e=>{
+  if(mode!=='draw') return;
+  if(e.pointerType==='pen' && !penSeen){ penSeen=true; if(!penOnly){ setPenOnly(true); toast('펜이 감지되어 손 터치는 무시해요'); } }
+  if(penOnly && e.pointerType==='touch') return;
+  if(stroke) return;
+  e.preventDefault(); try{ gc.setPointerCapture(e.pointerId); }catch(_){}
+  pushUndo(); const p=padPt(e); stroke={id:e.pointerId,last:p};
+  const er=pen.color==='eraser'; pctx.fillStyle=er?'#ffffff':pen.color;
+  pctx.beginPath(); pctx.arc(p.x,p.y,widthFor(e)/2,0,Math.PI*2); pctx.fill();
+});
+gc.addEventListener('pointermove',e=>{
+  if(!stroke || e.pointerId!==stroke.id) return;
+  const er=pen.color==='eraser'; pctx.strokeStyle=er?'#ffffff':pen.color; pctx.lineCap='round'; pctx.lineJoin='round';
+  const evs=(e.getCoalescedEvents&&e.getCoalescedEvents().length)?e.getCoalescedEvents():[e];
+  for(const ev of evs){ const p=padPt(ev); pctx.lineWidth=widthFor(ev); pctx.beginPath(); pctx.moveTo(stroke.last.x,stroke.last.y); pctx.lineTo(p.x,p.y); pctx.stroke(); stroke.last=p; }
+});
+const endStroke=e=>{ if(stroke && e.pointerId===stroke.id){ stroke=null; refreshDrawDoors(); } };
+gc.addEventListener('pointerup',endStroke); gc.addEventListener('pointercancel',endStroke);
+
+/* ---------- example map ---------- */
+function rng(seed){ return ()=>{ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function drawExample(){
+  padFill(); const R=rng(7), ctx=pctx;
+  const sc=(pts,color,w,fill)=>{ ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=w; ctx.lineCap='round'; ctx.lineJoin='round'; ctx.beginPath();
+    for(let i=0;i<pts.length-1;i++){ const [x1,y1]=pts[i],[x2,y2]=pts[i+1], n=Math.max(2,Math.ceil(Math.hypot(x2-x1,y2-y1)/30));
+      for(let j=0;j<=n;j++){ const t=j/n, m=j>0&&j<n, x=x1+(x2-x1)*t+(m?(R()-.5)*3:0), y=y1+(y2-y1)*t+(m?(R()-.5)*4:0); if(i===0&&j===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); } }
+    if(fill){ ctx.closePath(); ctx.fill(); } ctx.stroke(); ctx.restore(); };
+  const dot=(x,y,r,c)=>{ ctx.fillStyle=c; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); };
+  const K='#25222c';
+  sc([[30,380],[30,700]],K,14); sc([[30,700],[400,702]],K,14);
+  sc([[400,712],[490,712],[490,785],[400,785]],'#e53935',10,true);
+  sc([[490,702],[1170,700]],K,14); sc([[210,625],[340,621]],K,14); sc([[580,625],[700,622]],K,14); sc([[740,550],[860,553]],K,14);
+  sc([[775,697],[797,668],[819,697]],'#e53935',8,true);
+  sc([[728,600],[742,600],[742,694],[728,694]],'#ff7a00',10,true);
+  sc([[905,690],[965,690],[965,674],[905,674]],'#8e2bb0',8,true);
+  sc([[1000,470],[1170,468]],K,14);
+  sc([[1110,460],[1110,380]],'#1e7fe0',10); sc([[1112,380],[1165,402],[1112,424]],'#1e7fe0',8,true);
+  dot(95,640,24,'#2e9e4b');
+  [[275,575],[445,640],[640,575],[800,500],[1050,420]].forEach(([x,y])=>dot(x,y,17,'#f5cf00'));
+}
+
+/* =========================================================
+   PHYSICS
+   ========================================================= */
+function moveX(dx){
+  if(!dx) return; const nx=P.x+dx;
+  if(boxFree(L,nx,P.y,P.w,P.h)){ P.x=nx; return; }
+  if(P.grounded||coyote>0){ const fy=Math.floor(P.y+P.h-1e-4);
+    for(let s=1;s<=PH.step;s++){ const ny=fy-s+1-P.h-1e-3; if(boxFree(L,nx,ny,P.w,P.h)){ P.x=nx; P.y=ny; return; } } }
+  if(dx>0){ const s=Math.floor(nx+P.w-1e-6)-P.w-1e-4; if(s>=P.x) P.x=s; } else { const s=Math.floor(nx)+1+1e-4; if(s<=P.x) P.x=s; }
+  P.vx=0;
+}
+function moveY(dy){
+  const ny=P.y+dy;
+  if(boxFree(L,P.x,ny,P.w,P.h)){ P.y=ny; return; }
+  if(dy>0){ const ty=Math.floor(ny+P.h-1e-6), s=ty-P.h-1e-4; if(s>=P.y) P.y=s;
+    let bounce=false; for(let tx=Math.floor(P.x);tx<=Math.floor(P.x+P.w-1e-6);tx++) if(tileAt(L,tx,ty)===6) bounce=true;
+    if(P.vy>PH.k*6) P.squash=clamp(P.vy/PH.fall,0,1)*.35;
+    if(bounce){ P.vy=-PH.bounce; P.jumping=false; P.grounded=false; P.squash=-.3; sfx('bounce'); burst(P.x+P.w/2,P.y+P.h,10,['#9b4dd6','#e4c8f7']); }
+    else { P.vy=0; P.grounded=true; }
+  } else { const s=Math.floor(ny)+1+1e-4; if(s<=P.y) P.y=s; P.vy=0; }
+}
+function step(dt){
+  if(gstate==='dead'){ deadTimer-=dt; if(deadTimer<=0){ spawnPlayer(); gstate='play'; } return; }
+  if(gstate==='won'){ winTimer-=dt; if(winTimer<=0 && $('#winOverlay').hidden) showWin(); return; }
+  tTime+=dt;
+  const k=G.keys, dir=(k.right?1:0)-(k.left?1:0);
+  if(dir){ P.face=dir; if(P.grounded&&Math.sign(P.vx)===-dir) P.vx+=dir*PH.fric*dt; P.vx+=dir*(P.grounded?PH.acc:PH.air)*dt; P.vx=clamp(P.vx,-PH.max,PH.max); }
+  else if(P.grounded){ const f=PH.fric*dt; P.vx=Math.abs(P.vx)<=f?0:P.vx-Math.sign(P.vx)*f; }
+  else P.vx*=(1-1.5*dt);
+  coyote=P.grounded?.1:Math.max(0,coyote-dt); jumpBuf=Math.max(0,jumpBuf-dt);
+  if(jumpBuf>0&&coyote>0){ P.vy=-PH.jump; P.grounded=false; coyote=0; jumpBuf=0; P.jumping=true; P.squash=-.25; sfx('jump'); }
+  if(P.jumping&&!k.jump&&P.vy<0){ P.vy*=.5; P.jumping=false; }
+  if(P.vy>=0) P.jumping=false;
+  P.vy=Math.min(P.vy+PH.grav*dt,PH.fall);
+  moveX(P.vx*dt); P.grounded=false; moveY(P.vy*dt);
+  doorCool=Math.max(0,doorCool-dt);
+  if(doorCool<=0){ const d=touchingDoor(); if(d){ askDoor(d); return; } }
+  P.squash+=(0-P.squash)*Math.min(1,dt*10);
+  const kk=PH.k;
+  if(boxHas(L,P.x+.18*kk,P.y+.2*kk,P.w-.36*kk,P.h-.3*kk,2)||P.y>L.rows+2){ die(); return; }
+  const cx=P.x+P.w/2, cy=P.y+P.h/2;
+  for(const c of L.coins) if(!c.got&&Math.hypot(c.x-cx,c.y-cy)<1.15*kk){ c.got=true; sfx('coin'); burst(c.x,c.y,8,['#f6c026','#fff3b0']); }
+  const gd=L.goal?Math.hypot(L.goal.x-cx,L.goal.y-cy):99;
+  if(boxHas(L,P.x-.1,P.y-.1,P.w+.2,P.h+.2,5)||gd<1.3*kk) win();
+}
+function die(){ if(gstate!=='play') return; gstate='dead'; deadTimer=.65; deaths++; shake=.35; sfx('die'); burst(P.x+P.w/2,P.y+P.h/2,18,[INK,'#ffffff','#ef4b3f']); }
+function win(){ if(gstate!=='play') return; gstate='won'; winTimer=.7; sfx('win'); for(let i=0;i<4;i++) burst(P.x+P.w/2,P.y,14,['#3b82f6','#f6c026','#ff6fa5','#2e9e4b']); }
+function showWin(){
+  const got=L.coins.filter(c=>c.got).length, tot=L.coins.length, stars=1+((tot===0||got===tot)?1:0)+(deaths===0?1:0);
+  $('#stars').textContent='★'.repeat(stars)+'☆'.repeat(3-stars);
+  $('#winStats').textContent=`${tTime.toFixed(1)}초 걸렸고, 코인 ${got}/${tot}개, 실수 ${deaths}번`;
+  $('#winOverlay').hidden=false;
+}
+function burst(x,y,n,colors){ for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, sp=(3+Math.random()*7)*PH.k;
+  particles.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-4*PH.k,life:.5+Math.random()*.5,c:colors[i%colors.length],s:(.18+Math.random()*.25)*PH.k}); } }
+
+/* ---------- loop ---------- */
+let hudT=0;
+function loop(now){
+  if(!G.running) return;
+  const dt=Math.min(.05,(now-G.last)/1000); G.last=now; const t=now/1000;
+  g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,gW,gH);
+  if(mode==='play' && L && P){
+    if(paused) G.acc=0; else { G.acc+=dt; const h=1/120; while(G.acc>=h){ step(h); G.acc-=h; } }
+    for(const p of particles){ p.life-=dt; p.vy+=30*PH.k*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; } particles=particles.filter(p=>p.life>0);
+    shake=Math.max(0,shake-dt);
+    if(shake>0){ const m=shake/.35*6; g.translate((Math.random()-.5)*m,(Math.random()-.5)*m); }
+    if(!gStatic) gStatic=buildStatic(L,gts,dpr);
+    g.drawImage(gStatic,0,0,gW,gH); drawDynamic(g,L,gts,t);
+    if(gstate!=='dead') drawPlayer(g,P,gts,t,1);
+    for(const p of particles){ g.globalAlpha=clamp(p.life*2,0,1); g.fillStyle=p.c; g.fillRect((p.x-p.s/2)*gts,(p.y-p.s/2)*gts,p.s*gts,p.s*gts); } g.globalAlpha=1;
+    hudT-=dt; if(hudT<=0){ hudT=.1; $('#hCoins').textContent=`${L.coins.filter(c=>c.got).length}/${L.coins.length}`; $('#hTime').textContent=tTime.toFixed(1); $('#hDeaths').textContent=deaths; }
+  } else {
+    G.acc=0;
+    g.drawImage(pad,0,0,gW,gH);
+    if(P && gstate!=='won') drawPlayer(g,P,gts,t,.45);
+    for(const d of drawDoors){ const qd=doorQs[d.qi]; doorBadge(g,d,gts,`🚪${d.no}`,!!(qd&&qd.q&&qd.a)); }
+  }
+  g.setTransform(dpr,0,0,dpr,0,0);
+  if(gridOn) drawGrid(g);
+  if(hover && mode==='draw') drawHover(g);
+  G.raf=requestAnimationFrame(loop);
+}
+document.addEventListener('visibilitychange',()=>{ G.last=performance.now(); G.acc=0; });
+
+/* ---------- input ---------- */
+let actx=null, muted=false;
+function ensureAudio(){ try{ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); }catch(e){} }
+function press(key,down){ ensureAudio(); if(key==='jump'){ if(down&&!G.keys.jump) jumpBuf=.12; G.keys.jump=down; } else G.keys[key]=down; }
+const KEYMAP={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'jump',KeyW:'jump',Space:'jump',KeyZ:'jump'};
+window.addEventListener('keydown',e=>{
+  if(!studio.classList.contains('active')) return;
+  if(e.target && e.target.closest && e.target.closest('input,textarea')) return;
+  if(paused) return;
+  if((e.ctrlKey||e.metaKey)&&e.code==='KeyZ'){ if(mode==='draw'){ e.preventDefault(); doUndo(); } return; }
+  if(e.code==='KeyE'||(e.code==='Enter'&&mode==='draw')){ e.preventDefault(); setMode(mode==='draw'?'play':'draw'); return; }
+  if(mode!=='play') return;
+  if(e.code==='KeyR'){ spawnPlayer(); gstate='play'; return; }
+  const k=KEYMAP[e.code]; if(!k) return; e.preventDefault(); if(e.repeat&&k==='jump') return; press(k,true);
+});
+window.addEventListener('keyup',e=>{ if(e.target && e.target.closest && e.target.closest('input,textarea')) return; const k=KEYMAP[e.code]; if(k&&mode==='play'){ e.preventDefault(); press(k,false); } });
+window.addEventListener('blur',()=>{ G.keys.left=G.keys.right=G.keys.jump=false; });
+document.querySelectorAll('.ctl').forEach(b=>{
+  const key=b.dataset.k;
+  b.addEventListener('pointerdown',e=>{ e.preventDefault(); try{ b.setPointerCapture(e.pointerId); }catch(_){} press(key,true); });
+  const off=()=>press(key,false);
+  b.addEventListener('pointerup',off); b.addEventListener('pointercancel',off); b.addEventListener('lostpointercapture',off);
+  b.addEventListener('contextmenu',e=>e.preventDefault());
+});
+$('#modeSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b&&b.dataset.m!==mode){ ensureAudio(); setMode(b.dataset.m); } b&&b.blur(); });
+$('#exitBtn').addEventListener('click',()=>showScreen('home'));
+$('#restartBtn').addEventListener('click',()=>{ if(L){ spawnPlayer(); gstate='play'; } $('#restartBtn').blur(); });
+$('#againBtn').addEventListener('click',resetRun);
+$('#editBtn').addEventListener('click',()=>{ $('#winOverlay').hidden=true; setMode('draw'); });
+$('#homeBtn').addEventListener('click',()=>showScreen('home'));
+$('#newBtn').addEventListener('click',()=>{ padFill(); doorQs=[]; currentMeta={title:''}; openStudio('draw'); });
+$('#exampleStart').addEventListener('click',()=>{ drawExample(); doorQs=[{x:0,y:0,q:'x² − 5x + 6 = 0 의 두 근의 합은?',a:'5',ai:null}]; const lv=analyze(); if(lv.doors[0]){ doorQs[0].x=lv.doors[0].x; doorQs[0].y=lv.doors[0].y; } currentMeta={title:''}; openStudio('play'); });
+$('#muteBtn').addEventListener('click',()=>{ muted=!muted; $('#muteBtn').textContent=muted?'🔇':'🔊'; $('#muteBtn').blur(); });
+
+/* =========================================================
+   FIREBASE: 반 입장, 접속 상태, 제출, 갤러리
+   ========================================================= */
+const CONFIG_OK = !!(firebaseConfig && firebaseConfig.apiKey && firebaseConfig.databaseURL && !/여기/.test(firebaseConfig.apiKey));
+let fb=null;
+const fbReady=(async()=>{
+  if(!CONFIG_OK) return;
+  try{
+    const [A,U,D]=await Promise.all([import(FB_CDN+'firebase-app.js'),import(FB_CDN+'firebase-auth.js'),import(FB_CDN+'firebase-database.js')]);
+    ({initializeApp}=A); ({getAuth,signInAnonymously}=U); ({getDatabase,ref,get,set,update,onValue,onDisconnect,serverTimestamp,increment}=D);
+    const app=initializeApp(firebaseConfig); fb={app,auth:getAuth(app),db:getDatabase(app)};
+  }catch(e){ fb=null; }
+})();
+const me={code:'',name:'',uid:null,joined:false,practice:false};
+let currentMeta={title:''}, curMode='join', lastF=null, awayStart=0;
+let unsubs=[], subUnsub=null, subs=[], settings={};
+const cPath=p=>`classes/${me.code}/${p}`;
+const myRef=()=>ref(fb.db,cPath('students/'+me.uid));
+function lsGet(k){ try{ return localStorage.getItem(k)||''; }catch(e){ return ''; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+function send(patch){ if(!me.joined||!fb) return; patch.name=me.name; update(myRef(),patch).catch(()=>{}); }
+function curFocus(){ if(document.visibilityState==='hidden') return 'hidden'; return document.hasFocus()?'focus':'blur'; }
+function extState(){ return ('isExtended' in screen) ? !!screen.isExtended : null; }
+function reportFocus(){
+  if(!me.joined) return; const f=curFocus(); if(f===lastF) return;
+  const patch={focus:f,lastChange:serverTimestamp()};
+  if(lastF==='focus'&&f!=='focus'){ awayStart=Date.now(); patch.awayCount=increment(1); }
+  if(f==='focus'&&awayStart){ patch.awayMs=increment(Date.now()-awayStart); awayStart=0; }
+  lastF=f; send(patch);
+}
+function reportMode(m){ curMode=m; if(me.joined&&fb) send({mode:m,lastChange:serverTimestamp()}); }
+document.addEventListener('visibilitychange',reportFocus);
+window.addEventListener('blur',reportFocus); window.addEventListener('focus',reportFocus);
+setInterval(reportFocus,2000);
+setInterval(()=>{ if(me.joined && document.visibilityState==='visible') send({beat:serverTimestamp()}); },30000);
+if('isExtended' in screen && screen.addEventListener) screen.addEventListener('change',()=>send({extended:extState()}));
+
+async function join(code,name){
+  await fbReady; if(!fb) throw {k: CONFIG_OK?'net':'config'};
+  if(!fb.auth.currentUser) await signInAnonymously(fb.auth);
+  const own=await get(ref(fb.db,`classes/${code}/owner`));
+  if(!own.exists()) throw {k:'nocode'};
+  Object.assign(me,{code,name,uid:fb.auth.currentUser.uid,joined:true,practice:false});
+  lastF=curFocus(); awayStart=0;
+  await update(myRef(),{name,online:true,focus:lastF,mode:'home',extended:extState(),joinedAt:serverTimestamp(),lastChange:serverTimestamp()});
+  unsubs.push(onValue(ref(fb.db,'.info/connected'),snap=>{
+    if(snap.val()!==true||!me.joined) return;
+    onDisconnect(myRef()).update({online:false,lastChange:serverTimestamp()})
+      .then(()=>update(myRef(),{name:me.name,online:true,focus:curFocus(),mode:curMode,lastChange:serverTimestamp()})).catch(()=>{});
+  }));
+  unsubs.push(onValue(ref(fb.db,cPath('settings')),s=>{
+    settings=s.val()||{};
+    if(settings.galleryOpen) subscribeSubs(); else { if(subUnsub){ subUnsub(); subUnsub=null; } subs=[]; }
+    if($('#gallery').classList.contains('active')) renderGallery();
+  },()=>{}));
+}
+function leave(){
+  if(me.joined && fb){ update(myRef(),{online:false,lastChange:serverTimestamp()}).catch(()=>{}); onDisconnect(myRef()).cancel().catch(()=>{}); }
+  unsubs.forEach(u=>u()); unsubs=[]; if(subUnsub){ subUnsub(); subUnsub=null; } subs=[]; settings={};
+  Object.assign(me,{code:'',name:'',uid:null,joined:false,practice:false});
+  showScreen('join');
+}
+function subscribeSubs(){
+  if(subUnsub) return;
+  subUnsub=onValue(ref(fb.db,cPath('submissions')),s=>{
+    const v=s.val()||{}; subs=Object.entries(v).map(([id,d])=>Object.assign({id},d)).sort((a,b)=>(b.submittedAt||0)-(a.submittedAt||0));
+    if($('#gallery').classList.contains('active')) renderGallery();
+  },()=>{ subUnsub=null; });
+}
+function showWho(){
+  $('#whoText').textContent = me.joined ? `${me.name}, 반 코드 ${me.code}` : '연습 모드라서 제출은 안 돼요';
+}
+/* join screen */
+$('#joinCode').value=lsGet('doodle-code'); $('#joinName').value=lsGet('doodle-name');
+if(!CONFIG_OK) $('#joinErr').textContent='아직 Firebase 설정이 없어요. 선생님이 firebase-config.js를 채워야 입장할 수 있어요.';
+$('#joinCode').addEventListener('input',e=>{ e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,''); });
+$('#joinBtn').addEventListener('click',async()=>{
+  const code=$('#joinCode').value.trim().toUpperCase(), name=$('#joinName').value.trim();
+  if(code.length<4){ $('#joinErr').textContent='반 코드를 확인해 주세요.'; return; }
+  if(!name){ $('#joinErr').textContent='이름을 써 주세요.'; return; }
+  $('#joinBtn').disabled=true; $('#joinErr').textContent='들어가는 중이에요…';
+  try{ await join(code,name); lsSet('doodle-code',code); lsSet('doodle-name',name); $('#joinErr').textContent=''; showWho(); showScreen('home'); }
+  catch(e){ $('#joinErr').textContent = e&&e.k==='nocode' ? '없는 반 코드예요. 선생님께 다시 확인해 주세요.' : e&&e.k==='config' ? 'Firebase 설정이 없어서 입장할 수 없어요.' : '들어가지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'; }
+  $('#joinBtn').disabled=false;
+});
+$('#practiceBtn').addEventListener('click',()=>{ me.practice=true; me.joined=false; showWho(); showScreen('home'); });
+$('#leaveBtn').addEventListener('click',leave);
+
+/* submit + files */
+function shareStatus(t){ $('#shareStatus').textContent=t; }
+function updateShareUI(){
+  $('#shareUpload').hidden=!me.joined;
+  $('#shareWho').textContent = me.joined ? `${me.name} 이름으로 제출돼요` : '연습 모드에서는 제출할 수 없어요. 그림 파일로 저장해 두세요.';
+}
+function openShare(){
+  paused=true; G.keys.left=G.keys.right=G.keys.jump=false; $('#winOverlay').hidden=true;
+  $('#shareTitle').value=currentMeta.title||''; shareStatus(''); updateShareUI(); const lv=analyze(); syncDoors(lv); renderChecks(lv); $('#shareOverlay').hidden=false;
+}
+function closeShare(){ $('#shareOverlay').hidden=true; paused=false; G.last=performance.now(); if(gstate==='won'&&mode==='play') $('#winOverlay').hidden=false; }
+$('#shareBtn').addEventListener('click',openShare);
+$('#winShare').addEventListener('click',openShare);
+$('#shareClose').addEventListener('click',closeShare);
+function encodePad(){
+  const c=document.createElement('canvas'); c.width=900; c.height=600; const x=c.getContext('2d');
+  x.imageSmoothingQuality='high'; x.drawImage(pad,0,0,900,600);
+  let u=c.toDataURL('image/png');
+  if(u.length>280000){ for(const q of [.92,.85,.75,.6]){ u=c.toDataURL('image/jpeg',q); if(u.length<280000) break; } }
+  return u;
+}
+let uploading=false;
+let confirmSubmit=false;
+$('#shareUpload').addEventListener('click',async()=>{
+  if(uploading||!me.joined) return;
+  const title=$('#shareTitle').value.trim().slice(0,30)||'이름 없는 게임';
+  const lv=analyze(); syncDoors(lv); renderChecks(lv);
+  if(!lv.doors.length){ shareStatus('주황색 문을 1개 이상 그려야 제출할 수 있어요.'); return; }
+  const empty=lv.doors.filter(d=>{ const q=doorQs[d.qi]; return !(q.q.trim()&&q.a.trim()); });
+  if(empty.length){ shareStatus(`${empty.map(d=>d.no).join(', ')}번 문에 문제와 정답을 넣어야 해요. ✏️ 그리기의 🚪 문제 넣기에서 써 주세요.`); return; }
+  uploading=true;
+  const need=lv.doors.filter(d=>!aiFresh(doorQs[d.qi]));
+  if(need.length && aiReady()){ shareStatus('AI가 문제를 검사하는 중이에요…'); await aiCheck(lv.doors); renderChecks(lv); }
+  const bad=lv.doors.filter(d=>{ const r=doorQs[d.qi].ai; return r && aiFresh(doorQs[d.qi]) && r.verdict!=='ok'; });
+  if(bad.length && !confirmSubmit){
+    uploading=false; confirmSubmit=true; setTimeout(()=>confirmSubmit=false,8000);
+    shareStatus(`AI가 ${bad.map(d=>d.no).join(', ')}번 문에 고칠 점이 있다고 했어요. 🚪 문제 넣기에서 확인해 보세요. 그래도 내려면 제출을 한 번 더 눌러요.`); return;
+  }
+  confirmSubmit=false; shareStatus('제출하는 중이에요…');
+  const doors=lv.doors.map(d=>{ const q=doorQs[d.qi]; const r=aiFresh(q)?q.ai:null; return {no:d.no,x:+d.x.toFixed(2),y:+d.y.toFixed(2),q:q.q.slice(0,300),a:q.a.slice(0,100),verdict:r?r.verdict:'unchecked',ai:r?String(r.message||'').slice(0,300):''}; });
+  try{
+    await set(ref(fb.db,cPath('submissions/'+me.uid)),{name:me.name,title,img:encodePad(),doors,submittedAt:serverTimestamp()});
+    send({submittedAt:serverTimestamp(),title}); currentMeta={title};
+    shareStatus('제출했어요! 다시 제출하면 마지막 맵으로 바뀌어요.');
+  }catch(e){ shareStatus('제출하지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'); }
+  uploading=false;
+});
+$('#saveFile').addEventListener('click',()=>{
+  const name=(($('#shareTitle').value.trim())||'내 게임').replace(/[\\/:*?"<>|]/g,'').slice(0,40)||'내 게임';
+  const lv=analyze(); syncDoors(lv);
+  const meta=lv.doors.map(d=>{ const q=doorQs[d.qi]; return {x:d.x,y:d.y,q:q.q,a:q.a}; });
+  pad.toBlob(async b0=>{ let b=b0; try{ b=await pngWithText(b0,'doodle-doors',b64e(JSON.stringify(meta))); }catch(e){}
+    const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name+'.png'; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },3000); shareStatus('그림 파일로 저장했어요. 문 문제도 파일 안에 함께 저장돼요.'); },'image/png');
+});
+function loadImageToPad(src){
+  return new Promise((res,rej)=>{ const img=new Image();
+    img.onload=()=>{ padFill(); const iw=img.naturalWidth, ih=img.naturalHeight;
+      if(Math.abs(iw/ih-1.5)<0.12) pctx.drawImage(img,0,0,PADW,PADH);
+      else { const s=Math.min(PADW/iw,PADH/ih), w=iw*s, h=ih*s; pctx.drawImage(img,(PADW-w)/2,(PADH-h)/2,w,h); }
+      res(); };
+    img.onerror=rej; img.src=src; });
+}
+const openFilePicker=()=>$('#fileInput').click();
+$('#fileOpen').addEventListener('click',openFilePicker);
+$('#fileOpen2').addEventListener('click',openFilePicker);
+$('#fileInput').addEventListener('change',async e=>{
+  const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
+  const url=URL.createObjectURL(f);
+  try{ await loadImageToPad(url); doorQs=[]; try{ const t=readPngText(new Uint8Array(await f.arrayBuffer()),'doodle-doors'); if(t) doorQs=JSON.parse(b64d(t)).map(d=>({x:+d.x,y:+d.y,q:String(d.q||''),a:String(d.a||''),ai:null})); }catch(e){} $('#shareOverlay').hidden=true; paused=false; currentMeta={title:f.name.replace(/\.[^.]+$/,'').slice(0,30)}; openStudio('play'); toast('그림 파일을 불러왔어요'); }
+  catch(err){ toast('이 파일은 열 수 없어요. PNG나 JPG 그림을 골라 주세요.'); }
+  finally{ URL.revokeObjectURL(url); }
+});
+
+/* =========================================================
+   ORANGE DOORS: questions, answers, AI check
+   ========================================================= */
+function applyOpen(lv,d){
+  const rows={}; for(const i of d.cells){ const y=(i/lv.cols)|0, x=i%lv.cols; (rows[y]=rows[y]||[]).push(x); }
+  d.keep=new Set();
+  for(const [y,xs] of Object.entries(rows)){ const mn=Math.min(...xs), mx=Math.max(...xs), r=+y*lv.cols;
+    const bridge = mn>0 && mx<lv.cols-1 && lv.map[r+mn-1]===1 && lv.map[r+mx+1]===1;
+    for(const x of xs){ lv.map[r+x]=bridge?1:0; if(bridge) d.keep.add(r+x); } }
+}
+function syncDoors(lv){
+  const used=new Set();
+  for(const d of lv.doors){
+    let best=-1,bd=4.5;
+    doorQs.forEach((q,i)=>{ if(used.has(i)) return; const dd=Math.hypot(q.x-d.x,q.y-d.y); if(dd<bd){ bd=dd; best=i; } });
+    if(best<0){ doorQs.push({x:d.x,y:d.y,q:'',a:'',ai:null}); best=doorQs.length-1; }
+    used.add(best); d.qi=best; doorQs[best].x=d.x; doorQs[best].y=d.y;
+  }
+}
+function refreshDrawDoors(){ const lv=analyze(); syncDoors(lv); drawDoors=lv.doors; $('#qBtn').textContent=`🚪 문제 넣기 (${lv.doors.length})`; }
+function touchingDoor(){
+  const e=.15*PH.k, x0=Math.floor(P.x-e), x1=Math.floor(P.x+P.w+e-1e-6), y0=Math.floor(P.y-e), y1=Math.floor(P.y+P.h+e-1e-6);
+  for(let ty=y0;ty<=y1;ty++) for(let tx=x0;tx<=x1;tx++){ if(tx<0||ty<0||tx>=L.cols||ty>=L.rows) continue; const i=ty*L.cols+tx; if(L.map[i]===7){ const di=L.doorIdx[i]; if(di>=0&&!L.doors[di].open) return L.doors[di]; } }
+  return null;
+}
+function openDoor(d){ d.open=true; openedQ.add(d.qi); applyOpen(L,d); gStatic=buildStatic(L,gts,dpr); burst(d.x,d.y,16,['#ff7a00','#ffd2a6','#ffffff']); }
+let curDoor=null;
+function askDoor(d){
+  const qd=doorQs[d.qi];
+  if(!qd||!qd.q.trim()||!qd.a.trim()){ openDoor(d); toast(`${d.no}번 문은 문제가 없어서 그냥 열렸어요`); return; }
+  curDoor=d; paused=true; G.keys.left=G.keys.right=G.keys.jump=false;
+  $('#doorTitle').textContent=`🚪 ${d.no}번 문을 열려면 문제를 풀어요`;
+  $('#doorQ').textContent=qd.q; $('#doorInput').value=''; $('#doorFb').textContent='';
+  $('#doorOverlay').hidden=false; setTimeout(()=>$('#doorInput').focus(),50);
+}
+function closeDoorModal(){ $('#doorOverlay').hidden=true; curDoor=null; paused=false; G.last=performance.now(); }
+function norm(s){ return String(s).normalize('NFKC').toLowerCase().replace(/\s+/g,'').replace(/[−–—]/g,'-').replace(/×/g,'*').replace(/÷/g,'/').replace(/루트/g,'√'); }
+function toNum(s){ if(/^-?\d+(\.\d+)?$/.test(s)) return parseFloat(s); const m=s.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/); if(m&&+m[2]!==0) return m[1]/m[2]; return null; }
+function canon(s){ s=norm(s).replace(/[a-z]=/g,'').replace(/또는|이고|그리고|or/g,','); return s.split(',').filter(Boolean).map(p=>{ const n=toNum(p); return n===null?p:String(+n.toFixed(9)); }).sort().join(','); }
+function isCorrect(input,answer){ const c=canon(input); return c!=='' && String(answer).split(';').some(a=>canon(a)===c); }
+$('#doorOk').addEventListener('click',()=>{
+  if(!curDoor) return; const qd=doorQs[curDoor.qi];
+  if(isCorrect($('#doorInput').value,qd.a)){ const d=curDoor; closeDoorModal(); openDoor(d); sfx('coin'); toast(`정답! ${d.no}번 문이 열렸어요`,1500); }
+  else { $('#doorFb').textContent='아쉬워요. 다시 생각해 봐요.'; sfx('die'); $('#doorInput').select(); }
+});
+$('#doorInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('#doorOk').click(); } });
+$('#doorLater').addEventListener('click',()=>{ closeDoorModal(); doorCool=1.2; if(P){ P.vx=-(P.face||1)*PH.max*.8; P.vy=Math.min(P.vy,-PH.jump*.3); } });
+
+const MATH_KEYS=['√','²','³','π','/','−','±','(',')','x','='];
+let lastField=null;
+function buildKeys(box,getField){
+  for(const k of MATH_KEYS){ const b=document.createElement('button'); b.type='button'; b.textContent=k;
+    b.addEventListener('pointerdown',e=>e.preventDefault());
+    b.addEventListener('click',()=>{ const f=getField(); if(!f) return; const s0=f.selectionStart??f.value.length, s1=f.selectionEnd??f.value.length; f.value=f.value.slice(0,s0)+k+f.value.slice(s1); f.focus(); f.setSelectionRange(s0+k.length,s0+k.length); f.dispatchEvent(new Event('input')); });
+    box.appendChild(b); }
+}
+buildKeys($('#qKeys'),()=>lastField); buildKeys($('#doorKeys'),()=>$('#doorInput'));
+
+const VERDICT={ok:['ok','✅ 문제와 정답에 이상이 없어요.'],wrong_answer:['bad','❌ 정답이 맞지 않아요.'],incomplete:['warn','⚠️ 정답이 빠졌거나 덜 썼어요.'],unclear:['warn','⚠️ 문제가 애매해요.'],not_math:['warn','⚠️ 수학 문제가 아닌 것 같아요.'],inappropriate:['bad','❌ 문제에 어울리지 않는 내용이 있어요.']};
+function aiFresh(q){ return !!(q&&q.ai&&q.ai.q===q.q&&q.ai.a===q.a); }
+function aiLine(el,q){
+  if(!q.q.trim()||!q.a.trim()){ el.className='ai'; el.textContent='문제와 정답을 모두 써 주세요.'; return; }
+  if(!aiFresh(q)){ el.className='ai'; el.textContent= q.ai ? '고친 뒤 아직 AI 검사를 안 했어요.' : 'AI 검사 전이에요.'; return; }
+  const v=VERDICT[q.ai.verdict]||['warn','⚠️ 확인이 필요해요.']; el.className='ai '+v[0]; el.textContent=v[1]+(q.ai.message?' '+q.ai.message:'');
+}
+function openQ(){
+  refreshDrawDoors(); const list=$('#qList'); list.textContent=''; $('#qStatus').textContent='';
+  if(!drawDoors.length){ const p=document.createElement('p'); p.className='small'; p.textContent='아직 주황색 문이 없어요. 주황 펜으로 길을 막는 문을 그려 주세요.'; list.appendChild(p); }
+  for(const d of drawDoors){
+    const q=doorQs[d.qi];
+    const it=document.createElement('div'); it.className='qitem';
+    const h=document.createElement('h3'); h.textContent=`🚪 ${d.no}번 문 (x ${Math.round(d.x)}, y ${Math.round(ROWS-d.y)})`;
+    const l1=document.createElement('label'); l1.textContent='문제'; const ta=document.createElement('textarea'); ta.maxLength=300; ta.value=q.q; ta.placeholder='예: 이차방정식 x² − 7x + 12 = 0 의 두 근을 구하시오.'; l1.appendChild(ta);
+    const l2=document.createElement('label'); l2.textContent='정답'; const inp=document.createElement('input'); inp.maxLength=100; inp.value=q.a; inp.placeholder='예: 3, 4'; inp.autocomplete='off'; l2.appendChild(inp);
+    const ai=document.createElement('p'); aiLine(ai,q);
+    for(const f of [ta,inp]) f.addEventListener('focus',()=>lastField=f);
+    ta.addEventListener('input',()=>{ q.q=ta.value; aiLine(ai,q); }); inp.addEventListener('input',()=>{ q.a=inp.value; aiLine(ai,q); });
+    it.append(h,l1,l2,ai); it._ai=ai; it._q=q; list.appendChild(it);
+  }
+  $('#aiCheckBtn').disabled=!drawDoors.length;
+  if(!aiReady()) $('#qStatus').textContent='AI 검사를 쓸 수 없는 상태예요. 문제와 정답은 그대로 저장돼요.';
+  paused=true; $('#qOverlay').hidden=false;
+}
+$('#qBtn').addEventListener('click',openQ);
+$('#qClose').addEventListener('click',()=>{ $('#qOverlay').hidden=true; paused=false; });
+$('#aiCheckBtn').addEventListener('click',async()=>{
+  const ready=drawDoors.filter(d=>{ const q=doorQs[d.qi]; return q.q.trim()&&q.a.trim(); });
+  if(!ready.length){ $('#qStatus').textContent='문제와 정답을 먼저 써 주세요.'; return; }
+  if(!aiReady()){ $('#qStatus').textContent='AI 검사를 쓸 수 없는 상태예요. 선생님께 설정을 확인해 달라고 해 주세요.'; return; }
+  $('#aiCheckBtn').disabled=true; $('#qStatus').textContent='AI가 문제와 정답을 검사하는 중이에요…';
+  const ok=await aiCheck(ready);
+  $('#qList').querySelectorAll('.qitem').forEach(it=>aiLine(it._ai,it._q));
+  $('#qStatus').textContent= ok ? 'AI 검사가 끝났어요. 결과는 참고용이에요. 마지막 판단은 내가 해요.' : 'AI 검사를 하지 못했어요. 잠시 뒤 다시 눌러 주세요.';
+  $('#aiCheckBtn').disabled=false;
+});
+function renderChecks(lv){
+  const ul=$('#shareChecks'); ul.textContent='';
+  const filled=lv.doors.filter(d=>{ const q=doorQs[d.qi]; return q.q.trim()&&q.a.trim(); }).length;
+  const okc=lv.doors.filter(d=>aiFresh(doorQs[d.qi])&&doorQs[d.qi].ai.verdict==='ok').length;
+  const rows=[[lv.doors.length>0,`주황 문 ${lv.doors.length}개 (1개 이상 필요)`],[lv.doors.length>0&&filled===lv.doors.length,`문제와 정답 입력 ${filled}/${lv.doors.length}`],[lv.doors.length>0&&okc===lv.doors.length,`AI 검사 통과 ${okc}/${lv.doors.length}`+(aiReady()?'':' (AI 사용 불가)')]];
+  for(const [ok,t] of rows){ const li=document.createElement('li'); li.className=ok?'':'no'; li.textContent=(ok?'✅ ':'⬜ ')+t; ul.appendChild(li); }
+}
+
+/* --- AI (Firebase AI Logic, Gemini) --- */
+let aiModel=null, aiTried=false;
+const aiReady=()=>!!aiModel;
+(async()=>{
+  await fbReady; if(!fb) return;
+  try{
+    if(CFG.appCheckSiteKey){
+      const ac=await import(FB_CDN+'firebase-app-check.js');
+      ac.initializeAppCheck(fb.app,{provider:new ac.ReCaptchaEnterpriseProvider(CFG.appCheckSiteKey),isTokenAutoRefreshEnabled:true});
+    }
+    const m=await import(FB_CDN+'firebase-ai.js');
+    const S=m.Schema;
+    const schema=S.object({properties:{results:S.array({items:S.object({properties:{
+      no:S.number(), verdict:S.enumString({enum:['ok','wrong_answer','incomplete','unclear','not_math','inappropriate']}), message:S.string() }})})}});
+    const ai=m.getAI(fb.app,{backend:new m.GoogleAIBackend()});
+    aiModel=m.getGenerativeModel(ai,{model:CFG.aiModel||'gemini-3.5-flash',generationConfig:{responseMimeType:'application/json',responseSchema:schema,temperature:0.1}});
+  }catch(e){ aiModel=null; }
+})();
+async function aiCheck(doors){
+  if(!aiModel) return false;
+  const items=doors.map(d=>({no:d.no,문제:doorQs[d.qi].q,정답:doorQs[d.qi].a}));
+  const prompt=`너는 중학교 3학년 학생이 게임 속 '문제 문'에 넣은 수학 문제를 검토하는 도우미야.
+각 항목의 문제를 직접 풀어 보고, 학생이 쓴 정답이 맞는지 판단해.
+정답 표기 규칙: 답이 여러 개면 쉼표(,)로 나열하고, 같은 답의 다른 표현은 세미콜론(;)으로 나눈다. x=3 처럼 써도 된다.
+verdict는 다음 중 하나로 골라:
+- ok: 문제가 분명하고 정답이 맞음
+- wrong_answer: 정답이 틀림
+- incomplete: 답이 여러 개인데 일부만 썼거나, 조건이 빠져 정답이 하나로 정해지지 않음
+- unclear: 문제 문장이 애매하거나 오타 때문에 뜻이 정해지지 않음
+- not_math: 수학 문제가 아님
+- inappropriate: 욕설, 비하, 개인정보 등 수업에 맞지 않는 내용
+message는 학생에게 보여 줄 친절한 한국어 1~2문장이야. 틀린 경우 올바른 정답을 직접 알려 주지 말고, 어디를 다시 계산하거나 고치면 좋을지 힌트만 줘. ok면 짧게 칭찬하거나 중3 수준에 비해 너무 쉬운지 정도만 알려 줘.
+결과는 results 배열에 각 항목의 no와 함께 담아.
+검토할 항목(JSON): ${JSON.stringify(items)}`;
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      const r=await aiModel.generateContent(prompt);
+      const txt=r.response.text(); const data=JSON.parse(txt.replace(/```json|```/g,'').trim());
+      for(const res of (data.results||[])){ const d=doors.find(x=>x.no===Number(res.no)); if(!d) continue; const q=doorQs[d.qi]; q.ai={verdict:String(res.verdict),message:String(res.message||'').slice(0,300),q:q.q,a:q.a}; }
+      return true;
+    }catch(e){ await new Promise(r=>setTimeout(r,1500*(attempt+1)+Math.random()*800)); }
+  }
+  return false;
+}
+
+/* --- coordinate grid --- */
+function drawGrid(ctx){
+  const ts=gts, W=gW, H=gH;
+  ctx.save(); ctx.lineWidth=1;
+  for(let x=0;x<=COLS;x++){ const px=Math.round(x*ts)+.5; ctx.strokeStyle= x%5===0?'rgba(40,70,140,.28)':'rgba(40,70,140,.09)'; ctx.beginPath(); ctx.moveTo(px,0); ctx.lineTo(px,H); ctx.stroke(); }
+  for(let y=0;y<=ROWS;y++){ const py=Math.round(H-y*ts)+.5; ctx.strokeStyle= y%5===0?'rgba(40,70,140,.28)':'rgba(40,70,140,.09)'; ctx.beginPath(); ctx.moveTo(0,py); ctx.lineTo(W,py); ctx.stroke(); }
+  ctx.strokeStyle='rgba(29,35,64,.85)'; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.moveTo(1,0); ctx.lineTo(1,H-1); ctx.lineTo(W,H-1); ctx.stroke();
+  const fs=Math.max(10,Math.min(14,ts*.62)); ctx.font=`600 ${fs}px -apple-system,"Apple SD Gothic Neo",sans-serif`; ctx.fillStyle='rgba(29,35,64,.75)';
+  ctx.textAlign='center'; ctx.textBaseline='bottom';
+  for(let x=5;x<COLS-2;x+=5) ctx.fillText(String(x),x*ts,H-4);
+  ctx.textAlign='left'; ctx.textBaseline='middle';
+  for(let y=5;y<ROWS-2;y+=5) ctx.fillText(String(y),4,H-y*ts);
+  ctx.textBaseline='bottom'; ctx.fillText('O',4,H-3);
+  ctx.font=`700 ${fs+2}px -apple-system,sans-serif`; ctx.fillText('x',W-fs-4,H-4); ctx.textBaseline='top'; ctx.fillText('y',6,4);
+  ctx.restore();
+}
+function drawHover(ctx){
+  const gx=hover.x/gts, gy=ROWS-hover.y/gts;
+  ctx.save(); ctx.setLineDash([3,4]); ctx.strokeStyle='rgba(255,111,165,.7)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(hover.x,0); ctx.lineTo(hover.x,gH); ctx.moveTo(0,hover.y); ctx.lineTo(gW,hover.y); ctx.stroke(); ctx.setLineDash([]);
+  const label=`(${gx.toFixed(1)}, ${gy.toFixed(1)})`; ctx.font='700 14px -apple-system,sans-serif'; const w=ctx.measureText(label).width+14;
+  let lx=hover.x+12, ly=hover.y-30; if(lx+w>gW) lx=hover.x-w-12; if(ly<4) ly=hover.y+12;
+  rr(ctx,lx,ly,w,22,8); ctx.fillStyle='rgba(29,35,64,.88)'; ctx.fill(); ctx.fillStyle='#fff'; ctx.textBaseline='middle'; ctx.fillText(label,lx+7,ly+11);
+  ctx.restore();
+}
+gc.addEventListener('pointermove',e=>{ const r=gc.getBoundingClientRect(); hover={x:e.clientX-r.left,y:e.clientY-r.top}; });
+gc.addEventListener('pointerleave',()=>{ if(!stroke) hover=null; });
+gc.addEventListener('pointerup',e=>{ if(e.pointerType==='touch') hover=null; });
+$('#gridBtn').addEventListener('click',()=>{ gridOn=!gridOn; $('#gridBtn').setAttribute('aria-pressed',String(gridOn)); $('#gridBtn').blur(); });
+
+/* --- PNG text chunk (stores door questions inside saved files) --- */
+const CRC=(()=>{ const t=new Uint32Array(256); for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0; } return t; })();
+function crc32(b){ let c=0xFFFFFFFF; for(let i=0;i<b.length;i++) c=CRC[(c^b[i])&255]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+const b64e=s=>btoa(unescape(encodeURIComponent(s))), b64d=s=>decodeURIComponent(escape(atob(s)));
+async function pngWithText(blob,key,text){
+  const buf=new Uint8Array(await blob.arrayBuffer()); const enc=new TextEncoder();
+  const body=new Uint8Array([...enc.encode('tEXt'),...enc.encode(key),0,...enc.encode(text)]);
+  const chunk=new Uint8Array(12+body.length-4); const dv=new DataView(chunk.buffer);
+  dv.setUint32(0,body.length-4); chunk.set(body,4); dv.setUint32(4+body.length,crc32(body));
+  const at=33; return new Blob([buf.slice(0,at),chunk,buf.slice(at)],{type:'image/png'});
+}
+function readPngText(buf,key){
+  if(buf[0]!==0x89||buf[1]!==0x50) return null; const dv=new DataView(buf.buffer,buf.byteOffset,buf.byteLength); const dec=new TextDecoder('latin1');
+  let o=8; while(o+8<=buf.length){ const len=dv.getUint32(o), type=dec.decode(buf.subarray(o+4,o+8));
+    if(type==='tEXt'){ const d=buf.subarray(o+8,o+8+len); const z=d.indexOf(0); if(z>0&&dec.decode(d.subarray(0,z))===key) return dec.decode(d.subarray(z+1)); }
+    if(type==='IEND') break; o+=12+len; }
+  return null;
+}
+
+/* gallery */
+function gmsg(t){ $('#galleryMsg').textContent=t; }
+function openGallery(){ showScreen('gallery'); window.scrollTo(0,0); renderGallery(); }
+function renderGallery(){
+  const grid=$('#galleryGrid'); grid.textContent='';
+  if(!me.joined){ gmsg('반에 입장해야 친구들 맵을 볼 수 있어요. 친구에게 받은 그림 파일은 📂 파일 불러오기로 열 수 있어요.'); return; }
+  if(!settings.galleryOpen){ gmsg('선생님이 갤러리를 열면 친구들이 제출한 맵을 해 볼 수 있어요.'); return; }
+  gmsg(subs.length ? `맵 ${subs.length}개가 올라와 있어요. 마음에 드는 맵을 골라 해 보세요.` : '아직 제출된 맵이 없어요.');
+  for(const v of subs){
+    if(typeof v.img!=='string'||!v.img.startsWith('data:image/')) continue;
+    const card=document.createElement('div'); card.className='gcard';
+    const im=document.createElement('img'); im.src=v.img; im.alt=''; im.loading='lazy';
+    const gi=document.createElement('div'); gi.className='gi';
+    const h=document.createElement('h3'); h.textContent=String(v.title||'이름 없는 게임').slice(0,30);
+    if(v.id===me.uid){ const b=document.createElement('span'); b.className='mine'; b.textContent='내 맵'; h.appendChild(b); }
+    const by=document.createElement('div'); by.className='by'; by.textContent=String(v.name||'').slice(0,20)+' 만듦';
+    const ga=document.createElement('div'); ga.className='ga';
+    const play=document.createElement('button'); play.className='btn primary'; play.textContent='▶ 해 보기';
+    play.addEventListener('click',async()=>{
+      try{ await loadImageToPad(v.img); }catch(e){ gmsg('이 맵을 열지 못했어요.'); return; }
+      doorQs=(Array.isArray(v.doors)?v.doors:Object.values(v.doors||{})).map(d=>({x:+d.x,y:+d.y,q:String(d.q||''),a:String(d.a||''),ai:null}));
+      currentMeta={title: v.id===me.uid ? String(v.title||'') : ''};
+      openStudio('play'); toast(`${String(v.name||'').slice(0,20)}의 “${String(v.title||'이름 없는 게임').slice(0,30)}”`,2400);
+    });
+    ga.appendChild(play); gi.append(h,by,ga); card.append(im,gi); grid.appendChild(card);
+  }
+}
+$('#galleryOpen').addEventListener('click',openGallery);
+$('#galleryBack').addEventListener('click',()=>showScreen('home'));
+
+function tone(f1,f2,dur,type,vol,delay){ const t=actx.currentTime+(delay||0),o=actx.createOscillator(),gn=actx.createGain();
+  o.type=type; o.frequency.setValueAtTime(f1,t); if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  gn.gain.setValueAtTime(vol,t); gn.gain.exponentialRampToValueAtTime(.0001,t+dur); o.connect(gn).connect(actx.destination); o.start(t); o.stop(t+dur+.02); }
+function sfx(n){ if(muted||!actx) return; try{
+  if(n==='jump') tone(420,720,.12,'square',.05);
+  else if(n==='coin'){ tone(988,0,.07,'square',.05); tone(1319,0,.14,'square',.05,.07); }
+  else if(n==='die') tone(320,70,.4,'sawtooth',.06);
+  else if(n==='bounce') tone(260,980,.18,'triangle',.08);
+  else if(n==='win') [523,659,784,1047].forEach((f,i)=>tone(f,0,.18,'square',.05,i*.11));
+}catch(e){} }
+})();
+</script>
+</body>
+</html>
