@@ -1,0 +1,38 @@
+{
+  "rules": {
+    "teachers": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    },
+    "classes": {
+      "$code": {
+        "owner": {
+          ".read": "auth != null",
+          ".write": "auth != null && !data.exists() && newData.val() === auth.uid"
+        },
+        "settings": {
+          ".read": "auth != null && root.child('classes').child($code).child('owner').exists()",
+          ".write": "auth != null && root.child('classes').child($code).child('owner').val() === auth.uid"
+        },
+        "students": {
+          ".read": "auth != null && root.child('classes').child($code).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('classes').child($code).child('owner').val() === auth.uid",
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && root.child('classes').child($code).child('owner').exists()",
+            "name": { ".validate": "newData.isString() && newData.val().length <= 20" }
+          }
+        },
+        "submissions": {
+          ".read": "auth != null && (root.child('classes').child($code).child('owner').val() === auth.uid || root.child('classes').child($code).child('settings').child('galleryOpen').val() === true)",
+          ".write": "auth != null && root.child('classes').child($code).child('owner').val() === auth.uid",
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && root.child('classes').child($code).child('owner').exists()",
+            ".validate": "newData.hasChildren(['name', 'img']) && newData.child('name').isString() && newData.child('name').val().length <= 20 && newData.child('img').isString() && newData.child('img').val().length < 300000"
+          }
+        }
+      }
+    }
+  }
+}
