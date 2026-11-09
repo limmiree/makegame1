@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>도화지 아케이드 · 그리면서 노는 게임</title>
+<title>게임만들기1 · 도화지 아케이드</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
@@ -62,8 +62,9 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
 .legend li{display:grid;grid-template-columns:34px 64px 1fr;align-items:center;gap:8px}
 .sw{width:30px;height:16px;border-radius:9px 4px 10px 5px;background:var(--c);border:2px solid var(--ink)}
 .legend b{font-family:"Jua",sans-serif;font-weight:400;font-size:18px}
-.legend span,.tips{color:var(--muted);font-size:15px}
-.tips{margin:0;padding-left:1.2em}.tips li{margin-bottom:6px}
+.legend span{color:var(--muted);font-size:15px}
+.tips{margin:0;padding-left:1.3em;color:var(--ink);font-size:18px;font-weight:700;line-height:1.55}.tips li{margin-bottom:10px}
+.tips li.must{color:#e0262b}
 
 /* STUDIO */
 #studio.active{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--paper);
@@ -205,7 +206,7 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
   <div class="who"><span id="whoText"></span><button class="chip-btn" id="leaveBtn">반·이름 바꾸기</button></div>
   <div class="hero">
     <div>
-      <h1>그리면서<br>노는 게임</h1>
+      <h1>게임만들기1</h1>
       <p>태블릿에 손가락이나 펜으로 맵을 그리고 바로 뛰어 보세요. 막히는 곳이 있으면 게임 중에 그림을 고치고 이어서 하면 돼요.</p>
     </div>
     <div class="doodle" aria-hidden="true">
@@ -263,7 +264,7 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
         <li>✏️ 그리기에서 🏃 장애물 또는 🏓 벽돌깨기를 고르고 맵을 그린 뒤 ▶ 플레이를 눌러요.</li>
         <li>하다가 막히면 ✏️ 그리기를 눌러요. 캐릭터는 그 자리에 멈춰 있어요.</li>
         <li>발판을 더 그리거나 지우고 ▶ 플레이를 누르면 멈춘 곳에서 이어서 해요.</li>
-        <li>주황색 문을 1개 이상 그리고 🚪 문제 넣기로 문제와 정답을 써요. AI가 문제와 정답에 이상이 없는지 검사해 줘요.</li>
+        <li class="must">주황색 문을 1개 이상 그리고 🚪 문제 넣기로 문제와 정답을 꼭 만들어야 해요. AI가 문제와 정답에 이상이 없는지 검사해 줘요.</li>
         <li>다 만들면 📮 버튼으로 선생님께 제출해요.</li>
         <li>태블릿 펜을 쓰면 손바닥이 닿아도 그려지지 않게 펜만 그리기가 자동으로 켜져요.</li>
       </ol>
