@@ -46,6 +46,15 @@ input[type=text]{font:inherit;font-size:17px;padding:10px 12px;border:2px solid 
 .cls:active{transform:translate(4px,4px);box-shadow:none}
 .cls b{display:block;font-family:"Jua",sans-serif;font-weight:400;font-size:22px}
 .cls span{font-family:"Jua",sans-serif;letter-spacing:.15em;color:var(--muted)}
+.cgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}
+.panel.form{display:flex;flex-direction:column;gap:10px}
+.panel.form h2{margin:0}
+.panel.form label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:15px}
+.panel.form input{font:inherit;font-size:17px;padding:10px 12px;border:2px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
+#openCode{letter-spacing:.2em;text-transform:uppercase}
+.keypanel{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.keypanel .row2{display:flex;gap:10px;flex-wrap:wrap}
+.keypanel input{font:inherit;font-size:16px;padding:9px 12px;border:2px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink)}
 .newcls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 
 /* dashboard head */
@@ -137,28 +146,48 @@ input[type=text]{font:inherit;font-size:17px;padding:10px 12px;border:2px solid 
 <div class="wrap">
 <header>
   <div class="brand"><span class="logo">🖍️</span><span>도화지 아케이드 선생님 화면</span></div>
-  <div id="acct" hidden><span class="muted" id="acctName"></span> <button class="btn ghost" id="signOutBtn">로그아웃</button></div>
+  <button class="btn ghost" id="exitTeacher" hidden>← 학생 화면으로</button>
 </header>
 
-<section id="vSignin" class="center">
+<section id="vGate" class="center">
   <div class="panel signin">
-    <h1>선생님 로그인</h1>
-    <p class="muted">Google 계정으로 로그인하면 반을 만들고, 학생 접속 상태와 제출한 맵을 볼 수 있어요.</p>
-    <button class="btn primary" id="signInBtn">Google 계정으로 로그인</button>
+    <h1>선생님 화면</h1>
+    <p class="muted">선생님 비밀번호를 입력하세요.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <input type="password" id="gatePw" autocomplete="off" autocapitalize="off" spellcheck="false" style="font:inherit;font-size:22px;padding:10px 14px;border:2px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);width:200px;text-align:center;letter-spacing:.2em">
+      <button class="btn primary" id="gateBtn">들어가기</button>
+    </div>
+    <p class="err" id="gateErr"></p>
+  </div>
+</section>
+
+<section id="vSignin" class="center" hidden>
+  <div class="panel signin">
+    <h1>연결하는 중…</h1>
     <p class="err" id="signErr"></p>
   </div>
 </section>
 
 <section id="vClasses" hidden>
-  <div class="panel">
-    <h2 style="margin:0">내 반</h2>
-    <div class="classes" id="classList"></div>
-    <p class="muted" id="noClass" hidden>아직 만든 반이 없어요. 아래에서 첫 반을 만들어 보세요.</p>
-    <div class="newcls">
-      <input type="text" id="newName" maxlength="20" placeholder="반 이름 (예: 3학년 2반 수학)">
-      <button class="btn primary" id="createBtn">새 반 만들기</button>
+  <div class="cgrid">
+    <div class="panel">
+      <h2 style="margin:0">이 기기에서 연 반</h2>
+      <div class="classes" id="classList"></div>
+      <p class="muted" id="noClass" hidden>아직 이 기기에서 연 반이 없어요. 오른쪽에서 반을 만들거나 열어 주세요.</p>
     </div>
-    <p class="err" id="classErr"></p>
+    <div class="panel form">
+      <h2>반 열기</h2>
+      <p class="muted">다른 기기에서 만든 반도 반 코드만 넣으면 열 수 있어요.</p>
+      <label>반 코드<input type="text" id="openCode" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false"></label>
+      <button class="btn primary" id="openBtn">반 열기</button>
+      <p class="err" id="openErr"></p>
+    </div>
+    <div class="panel form">
+      <h2>새 반 만들기</h2>
+      <label>반 이름<input type="text" id="newName" maxlength="20" placeholder="예: 3학년 2반 수학"></label>
+      <button class="btn primary" id="createBtn">새 반 만들기</button>
+      <p class="err" id="classErr"></p>
+    </div>
   </div>
 </section>
 
@@ -247,15 +276,15 @@ input[type=text]{font:inherit;font-size:17px;padding:10px 12px;border:2px solid 
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 import { getDatabase, ref, get, set, update, remove, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
 import { firebaseConfig } from "./firebase-config.js";
 
 const $=s=>document.querySelector(s);
 const CONFIG_OK = !!(firebaseConfig && firebaseConfig.apiKey && firebaseConfig.databaseURL && !/여기/.test(firebaseConfig.apiKey));
-const views=['vSignin','vClasses','vDash'];
+const views=['vGate','vSignin','vClasses','vDash'];
 const show=v=>views.forEach(id=>$('#'+id).hidden=id!==v);
-if(!CONFIG_OK){ $('#signErr').textContent='firebase-config.js에 Firebase 설정을 먼저 넣어 주세요.'; $('#signInBtn').disabled=true; }
+
 
 const app = CONFIG_OK ? initializeApp(firebaseConfig) : null;
 const auth = app ? getAuth(app) : null, db = app ? getDatabase(app) : null;
@@ -269,53 +298,89 @@ function armed(btn,label,sureLabel,fn){
     on=false; btn.classList.remove('sure'); btn.textContent=label; fn();
   });
 }
-if(auth){
+const PW_HASH='5135503dab96d845b2cf045762de82ffe5ff479ab5d14af45de2b61225eebab3';
+async function hashPw(p){ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('doodle-arcade:'+p)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+let started=false;
+function gateOk(){ try{ return sessionStorage.getItem('doodle-teacher')==='ok' && !!sessionStorage.getItem('doodle-gate-pw'); }catch(e){ return false; } }
+function gatePw(){ try{ return sessionStorage.getItem('doodle-gate-pw')||''; }catch(e){ return ''; } }
+async function startTeacher(){
+  if(started) return; started=true; show('vSignin');
+  if(!CONFIG_OK||!auth){ $('#signErr').textContent='firebase-config.js에 Firebase 설정을 먼저 넣어 주세요.'; return; }
   onValue(ref(db,'.info/serverTimeOffset'),s=>{ offset=s.val()||0; });
-  onAuthStateChanged(auth,u=>{
-    uid=u&&!u.isAnonymous?u.uid:null;
-    $('#acct').hidden=!uid; $('#acctName').textContent=u?(u.displayName||u.email||''):'';
-    if(uid) openClasses(); else { closeClass(); show('vSignin'); }
-  });
+  onAuthStateChanged(auth,u=>{ uid=u?u.uid:null; if(uid && $('#vSignin').hidden===false) openClasses(); });
+  try{ if(!auth.currentUser) await signInAnonymously(auth); }
+  catch(e){ $('#signErr').textContent='연결하지 못했어요. Firebase에서 익명 로그인이 켜져 있는지, 인터넷이 연결됐는지 확인해 주세요.'; }
 }
-$('#signInBtn').addEventListener('click',async()=>{
-  $('#signErr').textContent='';
-  try{ await signInWithPopup(auth,new GoogleAuthProvider()); }
-  catch(e){ $('#signErr').textContent = e&&e.code==='auth/unauthorized-domain' ? '이 주소가 Firebase 승인된 도메인에 없어요. 설정 안내의 6단계를 확인해 주세요.' : e&&e.code==='auth/popup-blocked' ? '팝업이 막혔어요. 브라우저에서 팝업을 허용해 주세요.' : '로그인하지 못했어요. 다시 눌러 주세요.'; }
-});
-$('#signOutBtn').addEventListener('click',()=>signOut(auth));
-
+async function tryGate(){
+  const v=$('#gatePw').value.trim(); if(!v) return;
+  let ok=false; try{ ok=(await hashPw(v))===PW_HASH; }catch(e){ $('#gateErr').textContent='이 브라우저에서는 비밀번호를 확인할 수 없어요. https 주소로 열어 주세요.'; return; }
+  if(ok){ try{ sessionStorage.setItem('doodle-teacher','ok'); sessionStorage.setItem('doodle-gate-pw',v); }catch(e){} $('#gateErr').textContent=''; startTeacher(); }
+  else { $('#gateErr').textContent='비밀번호가 맞지 않아요.'; $('#gatePw').select(); }
+}
+$('#gateBtn').addEventListener('click',tryGate);
+$('#gatePw').addEventListener('keydown',e=>{ if(e.key==='Enter') tryGate(); });
+if(gateOk()) startTeacher(); else { show('vGate'); setTimeout(()=>$('#gatePw').focus(),50); }
+if(window.parent!==window){ $('#exitTeacher').hidden=false; $('#exitTeacher').addEventListener('click',()=>window.parent.postMessage({type:'doodle-close-teacher'},location.origin)); }
 /* ---------- classes ---------- */
 let clsUnsub=null;
+const clsHash=async(code,pw)=>{ const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('doodle-class:'+code+':'+pw)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); };
+function recent(){ try{ return JSON.parse(localStorage.getItem('doodle-classes')||'[]'); }catch(e){ return []; } }
+function saveRecent(code,name){ const r=recent().filter(c=>c.code!==code); r.unshift({code,name}); try{ localStorage.setItem('doodle-classes',JSON.stringify(r.slice(0,20))); }catch(e){} }
+function dropRecent(code){ try{ localStorage.setItem('doodle-classes',JSON.stringify(recent().filter(c=>c.code!==code))); }catch(e){} }
 function openClasses(){
   closeClass(); show('vClasses');
-  if(clsUnsub) clsUnsub();
-  clsUnsub=onValue(ref(db,`teachers/${uid}/classes`),s=>{
-    const v=s.val()||{}, list=$('#classList'); list.textContent='';
-    const items=Object.entries(v).sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
-    $('#noClass').hidden=items.length>0;
-    for(const [code,c] of items){
-      const b=document.createElement('button'); b.className='cls';
-      const n=document.createElement('b'); n.textContent=c.name||'이름 없는 반';
-      const k=document.createElement('span'); k.textContent=code;
-      b.append(n,k); b.addEventListener('click',()=>openClass(code,c.name||'')); list.appendChild(b);
-    }
-  });
+  const list=$('#classList'); list.textContent=''; const items=recent();
+  $('#noClass').hidden=items.length>0;
+  for(const c of items){
+    const b=document.createElement('button'); b.className='cls';
+    const n=document.createElement('b'); n.textContent=c.name||'이름 없는 반';
+    const k=document.createElement('span'); k.textContent=c.code;
+    b.append(n,k);
+    b.addEventListener('click',async()=>{
+      try{ const m=await get(ref(db,`classes/${c.code}/teachers/${uid}`)); if(m.exists()){ openClass(c.code,c.name||''); return; } }catch(e){}
+      if(gatePw()){ try{ await set(ref(db,`classes/${c.code}/teachers/${uid}`),await clsHash(c.code,gatePw())); openClass(c.code,c.name||''); return; }catch(e){} }
+      $('#openErr').textContent='이 반을 열 수 없어요. 예전 방식으로 만든 반이면 새 반을 만들어 주세요.';
+    });
+    list.appendChild(b);
+  }
 }
+$('#openCode').addEventListener('input',e=>{ e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,''); });
+async function openWithPw(){
+  const code=$('#openCode').value.trim().toUpperCase(), pw=gatePw();
+  if(code.length<4){ $('#openErr').textContent='반 코드를 넣어 주세요.'; return; }
+  if(!pw){ $('#openErr').textContent='선생님 화면에 다시 들어와 주세요.'; return; }
+  $('#openErr').textContent='여는 중…';
+  try{
+    await set(ref(db,`classes/${code}/teachers/${uid}`),await clsHash(code,pw));
+    const st=await get(ref(db,`classes/${code}/settings`)); const name=(st.val()||{}).className||'';
+    saveRecent(code,name); $('#openErr').textContent=''; openClass(code,name);
+  }catch(e){ $('#openErr').textContent='없는 반 코드이거나, 예전 방식으로 만든 반이라 열 수 없어요.'; }
+}
+$('#openBtn').addEventListener('click',openWithPw);
+$('#openCode').addEventListener('keydown',e=>{ if(e.key==='Enter') openWithPw(); });
+function randomToken(){ const a=new Uint8Array(24); crypto.getRandomValues(a); return [...a].map(x=>x.toString(16).padStart(2,'0')).join(''); }
 const ALPH='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function makeCode(){ let s=''; const a=new Uint32Array(6); crypto.getRandomValues(a); for(const x of a) s+=ALPH[x%ALPH.length]; return s; }
 $('#createBtn').addEventListener('click',async()=>{
-  const name=$('#newName').value.trim().slice(0,20)||'우리 반';
+  const name=$('#newName').value.trim().slice(0,20)||'우리 반', pw=gatePw();
   $('#classErr').textContent='';
+  if(!pw){ $('#classErr').textContent='선생님 화면에 다시 들어와 주세요.'; return; }
+  if(!uid){ $('#classErr').textContent='아직 연결 중이에요. 잠시 뒤 다시 눌러 주세요.'; return; }
+  $('#createBtn').disabled=true; $('#classErr').textContent='만드는 중…';
   for(let i=0;i<5;i++){
     const code=makeCode();
+    try{ await set(ref(db,`classes/${code}/owner`),uid); }catch(e){ continue; }
     try{
-      await set(ref(db,`classes/${code}/owner`),uid);
+      const h=await clsHash(code, pw);
+      await set(ref(db,`classes/${code}/secret`),h);
+      await set(ref(db,`classes/${code}/teachers/${uid}`),h);
       await set(ref(db,`classes/${code}/settings`),{className:name,galleryOpen:false});
-      await set(ref(db,`teachers/${uid}/classes/${code}`),{name,createdAt:serverTimestamp()});
-      $('#newName').value=''; openClass(code,name); return;
-    }catch(e){ /* 코드가 겹치면 다른 코드로 다시 시도 */ }
+      saveRecent(code,name); $('#newName').value='';
+      $('#classErr').textContent=''; $('#createBtn').disabled=false; openClass(code,name); return;
+    }catch(e){ break; }
   }
-  $('#classErr').textContent='반을 만들지 못했어요. 데이터베이스 규칙을 게시했는지 확인해 주세요.';
+  $('#createBtn').disabled=false;
+  $('#classErr').textContent='반을 만들지 못했어요. Firebase 규칙을 새 규칙으로 게시했는지 확인해 주세요.';
 });
 
 /* ---------- dashboard ---------- */
@@ -395,7 +460,7 @@ function renderStudents(){
     const l2=document.createElement('span'); l2.textContent=`벗어난 횟수 ${s.awayCount||0}번, 합계 ${dur(s.awayMs)}`;
     meta.append(l1,l2);
     const tags=document.createElement('div');
-    if(subsData[id]){ const t=document.createElement('span'); t.className="tag done"; t.textContent='제출함 '+ago(subsData[id].submittedAt); tags.appendChild(t); }
+    for(const sv of subsOf(id).sort((a,b)=>(a.type==='breakout')-(b.type==='breakout'))){ const t=document.createElement('span'); t.className="tag done"; t.textContent=`${TICON(sv.type)} 제출 ${ago(sv.submittedAt)}`; tags.appendChild(t); }
     if(s.extended===true){ const t=document.createElement('span'); t.className='tag ext'; t.textContent='🖥 외부 화면 연결됨'; tags.appendChild(t); }
     const x=document.createElement('button'); x.className='x'; x.textContent='✕'; x.title='목록에서 지우기';
     armed(x,'✕','지우기',()=>remove(ref(db,`classes/${cur}/students/${id}`)));
@@ -404,7 +469,7 @@ function renderStudents(){
   const online=list.length-cnt.off;
   $('#bLive').textContent=online;
   const sum=$('#summary'); sum.textContent='';
-  const items=[['var(--ok)','앱 보는 중',cnt.ok],['var(--blur)','다른 화면',cnt.blur],['var(--out)','앱 밖으로 나감',cnt.out],['var(--off)','끊김·응답 없음',cnt.off+cnt.stale],['var(--marker)','제출',Object.keys(subsData).length]];
+  const items=[['var(--ok)','앱 보는 중',cnt.ok],['var(--blur)','다른 화면',cnt.blur],['var(--out)','앱 밖으로 나감',cnt.out],['var(--off)','끊김·응답 없음',cnt.off+cnt.stale],['var(--marker)','제출한 학생',new Set(Object.entries(subsData).map(([id,v])=>ownerOf(id,v))).size]];
   for(const [c,t,n] of items){ const d=document.createElement('div'); d.className='sum'; const dot=document.createElement('i'); dot.className='dot'; dot.style.setProperty('--c',c); const num=document.createElement('span'); num.className='num'; num.textContent=n; const lb=document.createElement('span'); lb.textContent=t; d.append(dot,num,lb); sum.appendChild(d); }
 }
 setInterval(()=>{ if(cur) renderStudents(); },5000);
@@ -412,7 +477,10 @@ setInterval(()=>{ if(cur) renderStudents(); },5000);
 /* ---------- submissions ---------- */
 const sidOf=v=>String(v.sid||String(v.name||'').split(' ')[0]||'');
 const rnameOf=v=>String(v.rname||(v.sid?String(v.name||'').replace(String(v.sid),'').trim():v.name)||'이름 없음');
-const bySid=(a,b)=>sidOf(a).localeCompare(sidOf(b),'ko',{numeric:true})||String(a.name||'').localeCompare(String(b.name||''),'ko');
+const bySid=(a,b)=>sidOf(a).localeCompare(sidOf(b),'ko',{numeric:true})||String(a.name||'').localeCompare(String(b.name||''),'ko')||(a.type==='breakout')-(b.type==='breakout');
+const ownerOf=(id,v)=>String((v&&v.uid)||String(id).split('_')[0]);
+const TICON=t=>t==='breakout'?'🏓':'🏃';
+function subsOf(uid){ return Object.entries(subsData).filter(([id,v])=>ownerOf(id,v)===uid).map(([id,v])=>v); }
 let qFilter='all';
 function renderQs(){
   const body=$('#qBody'); body.textContent='';
@@ -428,7 +496,7 @@ function renderQs(){
       const tr=document.createElement('tr'); if(first) tr.className='first'; first=false;
       const cell=(t,c)=>{ const td=document.createElement('td'); td.textContent=t; if(c) td.className=c; tr.appendChild(td); return td; };
       cell(sidOf(v),'nw'); cell(rnameOf(v),'nw');
-      const gt=document.createElement('td'); const lk=document.createElement('button'); lk.className='link'; lk.textContent=v.title||'이름 없는 게임'; lk.title='맵 크게 보기';
+      const gt=document.createElement('td'); const lk=document.createElement('button'); lk.className='link'; lk.textContent=`${TICON(v.type)} ${v.title||'이름 없는 게임'}`; lk.title='맵 크게 보기';
       lk.addEventListener('click',()=>{ const i=subOrder.findIndex(x=>x.id===v.id); if(i>=0) openViewer(i); }); gt.appendChild(lk); tr.appendChild(gt);
       cell(`${d.no}번`,'nw'); cell(d.q||'','q'); cell(d.a||'');
       const t=VTXT[vd]||VTXT.unchecked; const vt=cell(t[1]); vt.firstChild && (vt.className=''); const sp=document.createElement('span'); sp.className='vt '+t[0]; sp.textContent=t[1]; vt.textContent=''; vt.appendChild(sp);
@@ -442,9 +510,9 @@ function renderQs(){
 document.querySelectorAll('.qf').forEach(b=>b.addEventListener('click',()=>{ qFilter=b.dataset.f; document.querySelectorAll('.qf').forEach(x=>x.classList.toggle('on',x===b)); renderQs(); }));
 $('#csvBtn').addEventListener('click',()=>{
   const esc=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
-  const rows=[['학번','이름','게임','문 번호','문제','정답','AI 판정','AI 의견','제출 시각']];
+  const rows=[['학번','이름','유형','게임','문 번호','문제','정답','AI 판정','AI 의견','제출 시각']];
   for(const v of Object.values(subsData).sort(bySid)) for(const d of doorList(v)){ const t=VTXT[d.verdict||'unchecked']||VTXT.unchecked;
-    rows.push([sidOf(v),rnameOf(v),v.title||'',d.no,d.q||'',d.a||'',t[1].replace(/^[^가-힣]+/,''),d.ai||'',v.submittedAt?new Date(v.submittedAt).toLocaleString('ko-KR'):'']); }
+    rows.push([sidOf(v),rnameOf(v),v.type==='breakout'?'벽돌깨기':'장애물 넘기',v.title||'',d.no,d.q||'',d.a||'',t[1].replace(/^[^가-힣]+/,''),d.ai||'',v.submittedAt?new Date(v.submittedAt).toLocaleString('ko-KR'):'']); }
   const csv='\ufeff'+rows.map(r=>r.map(esc).join(',')).join('\r\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   a.download=`${$('#dName').textContent||'반'}_제출문제.csv`; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },2000);
@@ -468,7 +536,7 @@ function renderSubs(){
     if(bad){ const c2=document.createElement('span'); c2.className='chip2 bad'; c2.textContent=`AI 확인 필요 ${bad}`; tl.appendChild(c2); }
     si.append(n,t,tl); b.append(im,si); b.addEventListener('click',()=>openViewer(i)); box.appendChild(b);
   });
-  const missing=Object.entries(students).filter(([id])=>!subsData[id]).map(([,s])=>s.name||'이름 없음').sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
+  const missing=Object.entries(students).filter(([id])=>!subsOf(id).length).map(([,s])=>s.name||'이름 없음').sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
   $('#missing').textContent = missing.length ? `아직 안 낸 학생 ${missing.length}명: ${missing.join(', ')}` : (Object.keys(students).length?'들어온 학생이 모두 제출했어요.':'');
   if(!$('#viewer').hidden){ if(!subOrder.length) closeViewer(); else showViewer(Math.min(vIndex,subOrder.length-1)); }
 }
