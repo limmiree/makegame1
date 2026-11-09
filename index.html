@@ -235,7 +235,7 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
   </div>
   <div class="notes">
     <div class="note">
-      <h2>색깔 규칙</h2>
+      <h2>🏃 장애물 넘기 색깔 규칙</h2>
       <ul class="legend">
         <li><i class="sw" style="--c:#25222c"></i><b>검정</b><span>발판과 벽. 밟고 설 수 있어요</span></li>
         <li><i class="sw" style="--c:#e53935"></i><b>빨강</b><span>용암. 닿으면 출발점으로 돌아가요</span></li>
@@ -360,7 +360,8 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
         <p class="small" id="shareWho"></p>
         <ul class="checks" id="shareChecks"></ul>
         <button class="btn primary" id="shareUpload">📮 선생님께 제출하기</button>
-        <p class="small">다시 제출하면 마지막에 낸 맵으로 바뀌어요.</p>
+        <p class="small" id="subInfo">장애물 넘기와 벽돌깨기를 하나씩 따로 낼 수 있어요. 같은 유형을 다시 내면 그 유형의 맵만 새로 바뀌어요.</p>
+        <ul class="checks" id="subState"></ul>
         <div class="row">
           <button class="btn" id="saveFile">💾 그림 파일로 저장</button>
           <button class="btn" id="fileOpen">📂 그림 파일 불러오기</button>
@@ -395,7 +396,7 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
 </section>
 
 <script type="module">
-let initializeApp, getAuth, signInAnonymously, getDatabase, ref, get, set, update, onValue, onDisconnect, serverTimestamp, increment;
+let initializeApp, getAuth, signInAnonymously, getDatabase, ref, get, set, update, remove, onValue, onDisconnect, serverTimestamp, increment;
 import * as CFG from "./firebase-config.js";
 const firebaseConfig = CFG.firebaseConfig;
 const FB_CDN = "https://www.gstatic.com/firebasejs/12.18.0/";
@@ -812,7 +813,7 @@ const fbReady=(async()=>{
   if(!CONFIG_OK) return;
   try{
     const [A,U,D]=await Promise.all([import(FB_CDN+'firebase-app.js'),import(FB_CDN+'firebase-auth.js'),import(FB_CDN+'firebase-database.js')]);
-    ({initializeApp}=A); ({getAuth,signInAnonymously}=U); ({getDatabase,ref,get,set,update,onValue,onDisconnect,serverTimestamp,increment}=D);
+    ({initializeApp}=A); ({getAuth,signInAnonymously}=U); ({getDatabase,ref,get,set,update,remove,onValue,onDisconnect,serverTimestamp,increment}=D);
     const app=initializeApp(firebaseConfig); fb={app,auth:getAuth(app),db:getDatabase(app)};
   }catch(e){ fb=null; }
 })();
@@ -898,6 +899,10 @@ $('#leaveBtn').addEventListener('click',leave);
 function shareStatus(t){ $('#shareStatus').textContent=t; }
 function updateShareUI(){
   $('#shareUpload').hidden=!me.joined;
+  const ss=$('#subState'); ss.textContent='';
+  if(me.joined) for(const t of ['platform','breakout']){ const v=lsGet(`doodle-sub-${me.code}-${me.sid}-${t}`); const li=document.createElement('li');
+    li.textContent=`${TYPE_NAME[t]}: ${v?new Date(+v).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+'에 제출함':'아직 안 냄'}${t===gameType?'  ← 지금 맵':''}`; ss.appendChild(li); }
+  $('#shareUpload').textContent=`📮 ${TYPE_NAME[gameType]} 맵 제출하기`;
   $('#shareWho').textContent = me.joined ? `${me.name} 이름으로 제출돼요` : '연습 모드에서는 제출할 수 없어요. 그림 파일로 저장해 두세요.';
 }
 function openShare(){
@@ -935,9 +940,11 @@ $('#shareUpload').addEventListener('click',async()=>{
   confirmSubmit=false; shareStatus('제출하는 중이에요…');
   const doors=lv.doors.map(d=>{ const q=doorQs[d.qi]; const r=aiFresh(q)?q.ai:null; return {no:d.no,x:+d.x.toFixed(2),y:+d.y.toFixed(2),q:q.q.slice(0,300),a:q.a.slice(0,100),verdict:r?r.verdict:'unchecked',ai:r?String(r.message||'').slice(0,300):''}; });
   try{
-    await set(ref(fb.db,cPath('submissions/'+me.uid)),{name:me.name,sid:me.sid||'',rname:me.rname||'',title,type:gameType,img:encodePad(),doors,submittedAt:serverTimestamp()});
+    await set(ref(fb.db,cPath('submissions/'+me.uid+'_'+gameType)),{uid:me.uid,name:me.name,sid:me.sid||'',rname:me.rname||'',title,type:gameType,img:encodePad(),doors,submittedAt:serverTimestamp()});
     send({submittedAt:serverTimestamp(),title}); currentMeta={title};
-    shareStatus('제출했어요! 다시 제출하면 마지막 맵으로 바뀌어요.');
+    remove(ref(fb.db,cPath('submissions/'+me.uid))).catch(()=>{});
+    lsSet(`doodle-sub-${me.code}-${me.sid}-${gameType}`,String(Date.now())); updateShareUI();
+    shareStatus(`${TYPE_NAME[gameType]} 맵을 제출했어요! 같은 유형을 다시 내면 그 유형의 맵만 바뀌어요.`);
   }catch(e){ shareStatus('제출하지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'); }
   uploading=false;
 });
@@ -1063,6 +1070,7 @@ $('#aiCheckBtn').addEventListener('click',async()=>{
   $('#qStatus').textContent= ok ? 'AI 검사가 끝났어요. 결과는 참고용이에요. 마지막 판단은 내가 해요.' : 'AI 검사를 하지 못했어요. 잠시 뒤 다시 눌러 주세요.';
   $('#aiCheckBtn').disabled=false;
 });
+const TYPE_NAME={platform:'🏃 장애물 넘기',breakout:'🏓 벽돌깨기'};
 function renderChecks(lv){
   const ul=$('#shareChecks'); ul.textContent='';
   const filled=lv.doors.filter(d=>{ const q=doorQs[d.qi]; return q.q.trim()&&q.a.trim(); }).length;
@@ -1283,7 +1291,7 @@ function renderGallery(){
     const im=document.createElement('img'); im.src=v.img; im.alt=''; im.loading='lazy';
     const gi=document.createElement('div'); gi.className='gi';
     const h=document.createElement('h3'); h.textContent=String(v.title||'이름 없는 게임').slice(0,30);
-    if(v.id===me.uid){ const b=document.createElement('span'); b.className='mine'; b.textContent='내 맵'; h.appendChild(b); }
+    if((v.uid||String(v.id).split('_')[0])===me.uid){ const b=document.createElement('span'); b.className='mine'; b.textContent='내 맵'; h.appendChild(b); }
     const by=document.createElement('div'); by.className='by'; by.textContent=(v.type==='breakout'?'🏓 벽돌깨기, ':'🏃 장애물, ')+String(v.name||'').slice(0,20)+' 만듦';
     const ga=document.createElement('div'); ga.className='ga';
     const play=document.createElement('button'); play.className='btn primary'; play.textContent='▶ 해 보기';
@@ -1291,7 +1299,7 @@ function renderGallery(){
       try{ await loadImageToPad(v.img); }catch(e){ gmsg('이 맵을 열지 못했어요.'); return; }
       setGameType(v.type,true);
       doorQs=(Array.isArray(v.doors)?v.doors:Object.values(v.doors||{})).map(d=>({x:+d.x,y:+d.y,q:String(d.q||''),a:String(d.a||''),ai:null}));
-      currentMeta={title: v.id===me.uid ? String(v.title||'') : ''};
+      currentMeta={title: (v.uid||String(v.id).split('_')[0])===me.uid ? String(v.title||'') : ''};
       openStudio('play'); toast(`${String(v.name||'').slice(0,20)}의 “${String(v.title||'이름 없는 게임').slice(0,30)}”`,2400);
     });
     ga.appendChild(play); gi.append(h,by,ga); card.append(im,gi); grid.appendChild(card);
