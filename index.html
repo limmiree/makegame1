@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>게임만들기1 · 도화지 아케이드</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#ffd23f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="게임만들기1">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
@@ -168,6 +176,18 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
 .doorq{font-size:22px;line-height:1.5;margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere;text-align:center}
 .door-card input{font-size:22px;text-align:center}
 .door-btn{border-color:#ff7a00}
+.tb.submit-btn{width:auto;padding:0 16px;font-family:"Jua","Apple SD Gothic Neo",sans-serif;font-size:20px;font-weight:700;background:#e0262b;color:#fff;border-color:var(--ink);box-shadow:2px 2px 0 var(--ink);letter-spacing:.02em}
+.tb.submit-btn:active{transform:translate(2px,2px);box-shadow:none}
+.done-ov{z-index:8;background:rgba(18,21,42,.55)}
+.done-card{background:var(--surface);border:4px solid #2e9e4b;border-radius:24px;box-shadow:6px 6px 0 var(--ink);padding:28px 34px 24px;text-align:center;max-width:92%;width:440px;animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+.done-check{width:86px;height:86px;margin:0 auto 6px;border-radius:50%;background:#2e9e4b;color:#fff;font-size:56px;line-height:86px;font-weight:700}
+.done-card h2{font-family:"Jua",sans-serif;font-weight:400;font-size:44px;margin:4px 0;color:#1f7a3a}
+.done-what{font-size:19px;font-weight:700;margin:6px 0 2px;overflow-wrap:anywhere}
+.done-sub{font-size:14px;color:var(--muted);margin:4px 0 16px}
+.done-card .btn{font-size:20px;padding:10px 34px}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){.done-card{animation:none}}
+.example-note{margin:0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,#e5484d 12%,var(--surface));color:#c62828;font-weight:700;font-size:15px}
 .checks{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:15px}
 .checks li.no{color:#d33}
 #studio .toolbar .right{order:1}
@@ -180,6 +200,75 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
 .typeseg button.on{background:#ff7a00;color:#fff}
 #gridBtn[aria-pressed="false"]{opacity:.45}
 @media (max-width:760px){ .hero{grid-template-columns:1fr} .doodle{max-width:420px} .actions,.notes{grid-template-columns:1fr} }
+
+/* ===== 반응형: 좁거나 낮은 화면 ===== */
+#join.active{grid-template-columns:minmax(0,1fr)}
+.joinbox{min-width:0}
+.joinbox input{min-width:0;width:100%}
+@media (max-width:480px){
+  .wrap{padding:10px 12px 40px}
+  header.site{padding:10px 12px 0}
+  .joinbox{padding:20px 18px 14px}
+  .joinbox h1{font-size:30px}
+  #joinCode{font-size:20px;letter-spacing:.12em}
+  #joinCode::placeholder{letter-spacing:0;font-size:16px}
+  .hero{padding-top:6px;gap:16px}
+  .action{padding:16px 18px}
+  .action .t{font-size:21px}
+  .tips{font-size:16px}
+}
+@media (max-width:760px), (max-height:560px){
+  #studio .toolbar{flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;gap:8px;padding:6px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  #studio .toolbar > *{flex:none}
+  #studio .toolbar .grow{flex:none;flex-wrap:nowrap;gap:8px}
+  #studio .toolbar .grow.draw-only{order:0;flex-basis:auto}
+  #studio .toolbar .right{order:0;margin-left:auto;position:sticky;right:-8px;padding:0 8px 0 10px;background:linear-gradient(90deg,transparent,var(--surface) 10px);z-index:2}
+  #studio .pens,#studio .group{flex-wrap:nowrap}
+  #studio .tb{width:38px;height:38px;font-size:16px}
+  #studio .tb.submit-btn{font-size:17px;padding:0 12px}
+  #studio .mode button{font-size:16px;padding:6px 10px}
+  #studio .typeseg{box-shadow:2px 2px 0 var(--ink)}
+  #studio .typeseg button{font-size:15px;padding:6px 10px}
+  #studio .typeseg .typelabel{display:none}
+  #studio .pen{width:32px;height:32px;border-width:2px}
+  #studio .penbox{min-width:36px;gap:2px}
+  #studio .penbox small{font-size:10px}
+  #studio .chip-btn{font-size:13px;padding:5px 10px}
+  #studio .stats{font-size:16px;gap:10px;white-space:nowrap}
+  #studio .stage{padding:4px}
+  #studio .kbd-hint{display:none}
+  .ctl{width:66px;height:66px;font-size:24px}
+  .ctl.jump{width:84px;height:84px;font-size:20px}
+}
+#studio .tb.submit-btn{width:auto;white-space:nowrap}
+@media (max-width:760px){
+  #studio .toolbar{flex-wrap:wrap;overflow:visible}
+  #studio .toolbar .right{order:1;position:static;background:none;padding:0;margin-left:auto}
+  #studio .toolbar .typeseg{order:2}
+  #studio .toolbar .grow.draw-only{order:3;flex:1 1 0;min-width:0;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  #studio .toolbar .grow.play-only{order:2;flex:1 1 100%}
+}
+@media (max-width:430px){
+  #studio .toolbar{gap:6px;padding:6px}
+  #studio .toolbar .right{gap:6px}
+  #studio .tb{width:34px;height:34px;font-size:15px}
+  #studio .tb.submit-btn{font-size:15px;padding:0 10px}
+  #studio .mode button{font-size:14px;padding:5px 8px}
+  #studio #muteBtn{display:none}
+}
+@media (max-height:560px) and (pointer:coarse){
+  #studio .pad-controls{position:absolute;left:0;right:0;bottom:env(safe-area-inset-bottom,0px);padding:6px 14px 10px;pointer-events:none;background:none}
+  #studio .pad-controls .ctl{pointer-events:auto;opacity:.82;width:58px;height:58px}
+  #studio .pad-controls .ctl.jump{width:72px;height:72px}
+}
+@media (max-width:480px){
+  .win-card{padding:18px 16px}
+  .win-card h2{font-size:32px}
+  .done-card{padding:22px 18px 18px}
+  .done-card h2{font-size:36px}
+  .q-card,.door-card,.share-card{width:96%}
+  .doorq{font-size:19px}
+}
 </style>
 </head>
 <body>
@@ -334,7 +423,7 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
     </div>
     <div class="right">
       <button class="tb" id="gridBtn" aria-label="좌표 눈금 켜고 끄기" aria-pressed="true">📐</button>
-      <button class="tb" id="shareBtn" aria-label="맵 제출하기">📮</button>
+      <button class="tb submit-btn" id="shareBtn" aria-label="맵 제출하기">📮 제출</button>
       <button class="tb" id="muteBtn" aria-label="소리 켜고 끄기">🔊</button>
       <button class="tb play-only" id="restartBtn" aria-label="출발점에서 다시">↺</button>
     </div>
@@ -342,6 +431,15 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
   <div class="stage" id="stage">
     <canvas id="gameCanvas" aria-label="게임 화면"></canvas>
     <div class="toast" id="toast"></div>
+    <div class="overlay done-ov" id="doneOverlay" hidden>
+      <div class="done-card" role="alertdialog" aria-labelledby="doneTitle">
+        <div class="done-check">✓</div>
+        <h2 id="doneTitle">제출 완료!</h2>
+        <p class="done-what" id="doneWhat"></p>
+        <p class="done-sub" id="doneSub"></p>
+        <button class="btn primary" id="doneOk">확인</button>
+      </div>
+    </div>
     <div class="overlay" id="qOverlay" hidden>
       <div class="win-card q-card" role="dialog" aria-label="문 문제 넣기">
         <h2>🚪 주황 문 문제 넣기</h2>
@@ -373,6 +471,7 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
         <h2>맵 제출하기</h2>
         <label>게임 이름<input id="shareTitle" maxlength="30" placeholder="예: 용암 점프 대모험"></label>
         <p class="small" id="shareWho"></p>
+        <p class="example-note" id="exampleNote" hidden>예시 맵은 연습용이라 제출할 수 없어요. 첫 화면의 <b>✏️ 새로 그리기</b>에서 직접 그린 맵을 제출해 주세요.</p>
         <ul class="checks" id="shareChecks"></ul>
         <button class="btn primary" id="shareUpload">📮 선생님께 제출하기</button>
         <p class="small" id="subInfo">장애물 넘기와 벽돌깨기를 하나씩 따로 낼 수 있어요. 같은 유형을 다시 내면 그 유형의 맵만 새로 바뀌어요.</p>
@@ -575,6 +674,7 @@ function showScreen(id){
   else { G.running=false; cancelAnimationFrame(G.raf); }
 }
 function openStudio(startMode){
+  setTimeout(()=>{ try{ if(matchMedia('(orientation: portrait) and (max-width: 760px)').matches) toast('📱 화면을 가로로 돌리면 맵이 더 크게 보여요',2600); }catch(e){} },400);
   openedQ.clear(); drawDoors=[]; L=null; P=null; tTime=0; deaths=0; particles=[]; gstate='play'; $('#winOverlay').hidden=true; undo=[];
   showScreen('studio'); setMode(startMode);
 }
@@ -815,8 +915,8 @@ $('#restartBtn').addEventListener('click',()=>{ if(L){ if(L.type==='breakout') r
 $('#againBtn').addEventListener('click',resetRun);
 $('#editBtn').addEventListener('click',()=>{ $('#winOverlay').hidden=true; setMode('draw'); });
 $('#homeBtn').addEventListener('click',()=>showScreen('home'));
-$('#newBtn').addEventListener('click',()=>{ padFill(); doorQs=[]; setGameType('platform',true); currentMeta={title:''}; openStudio('draw'); });
-$('#exampleStart').addEventListener('click',()=>{ setGameType('platform',true); drawExample(); doorQs=[{x:0,y:0,q:'x² − 5x + 6 = 0 의 두 근의 합은?',a:'5',ai:null}]; const lv=analyze(); if(lv.doors[0]){ doorQs[0].x=lv.doors[0].x; doorQs[0].y=lv.doors[0].y; } currentMeta={title:''}; openStudio('play'); });
+$('#newBtn').addEventListener('click',()=>{ isExample=false; padFill(); doorQs=[]; setGameType('platform',true); currentMeta={title:''}; openStudio('draw'); });
+$('#exampleStart').addEventListener('click',()=>{ isExample=true; setGameType('platform',true); drawExample(); doorQs=[{x:0,y:0,q:'x² − 5x + 6 = 0 의 두 근의 합은?',a:'5',ai:null}]; const lv=analyze(); if(lv.doors[0]){ doorQs[0].x=lv.doors[0].x; doorQs[0].y=lv.doors[0].y; } currentMeta={title:''}; openStudio('play'); });
 $('#muteBtn').addEventListener('click',()=>{ muted=!muted; $('#muteBtn').textContent=muted?'🔇':'🔊'; $('#muteBtn').blur(); });
 
 /* =========================================================
@@ -912,17 +1012,19 @@ $('#leaveBtn').addEventListener('click',leave);
 
 /* submit + files */
 function shareStatus(t){ $('#shareStatus').textContent=t; }
+let isExample=false;
 function updateShareUI(){
-  $('#shareUpload').hidden=!me.joined;
+  $('#shareUpload').hidden=!me.joined||isExample;
+  $('#exampleNote').hidden=!isExample;
   const ss=$('#subState'); ss.textContent='';
   if(me.joined) for(const t of ['platform','breakout']){ const v=lsGet(`doodle-sub-${me.code}-${me.sid}-${t}`); const li=document.createElement('li');
     li.textContent=`${TYPE_NAME[t]}: ${v?new Date(+v).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+'에 제출함':'아직 안 냄'}${t===gameType?'  ← 지금 맵':''}`; ss.appendChild(li); }
   $('#shareUpload').textContent=`📮 ${TYPE_NAME[gameType]} 맵 제출하기`;
-  $('#shareWho').textContent = me.joined ? `${me.name} 이름으로 제출돼요` : '연습 모드에서는 제출할 수 없어요. 그림 파일로 저장해 두세요.';
+  $('#shareWho').textContent = isExample ? '' : me.joined ? `${me.name} 이름으로 제출돼요` : '연습 모드에서는 제출할 수 없어요. 그림 파일로 저장해 두세요.';
 }
 function openShare(){
   paused=true; G.keys.left=G.keys.right=G.keys.jump=false; $('#winOverlay').hidden=true;
-  $('#shareTitle').value=currentMeta.title||''; shareStatus(''); updateShareUI(); const lv=analyze(); syncDoors(lv); renderChecks(lv); $('#shareOverlay').hidden=false;
+  $('#shareTitle').value=currentMeta.title||''; shareStatus(''); updateShareUI(); const lv=analyze(); syncDoors(lv); renderChecks(lv); $('#shareChecks').hidden=isExample; $('#subState').hidden=isExample; $('#subInfo').hidden=isExample; $('#shareOverlay').hidden=false;
 }
 function closeShare(){ $('#shareOverlay').hidden=true; paused=false; G.last=performance.now(); if(gstate==='won'&&mode==='play') $('#winOverlay').hidden=false; }
 $('#shareBtn').addEventListener('click',openShare);
@@ -938,7 +1040,7 @@ function encodePad(){
 let uploading=false;
 let confirmSubmit=false;
 $('#shareUpload').addEventListener('click',async()=>{
-  if(uploading||!me.joined) return;
+  if(uploading||!me.joined||isExample) return;
   const title=$('#shareTitle').value.trim().slice(0,30)||'이름 없는 게임';
   const lv=analyze(); syncDoors(lv); renderChecks(lv);
   if(!lv.doors.length){ shareStatus('주황색 문을 1개 이상 그려야 제출할 수 있어요.'); return; }
@@ -960,13 +1062,16 @@ $('#shareUpload').addEventListener('click',async()=>{
     remove(ref(fb.db,cPath('submissions/'+me.uid))).catch(()=>{});
     lsSet(`doodle-sub-${me.code}-${me.sid}-${gameType}`,String(Date.now())); updateShareUI();
     shareStatus(`${TYPE_NAME[gameType]} 맵을 제출했어요! 같은 유형을 다시 내면 그 유형의 맵만 바뀌어요.`);
+    $('#doneWhat').textContent=`${TYPE_NAME[gameType]} “${title}”`;
+    $('#doneSub').textContent=`${me.name}, ${new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})} 선생님께 전달됐어요. 같은 유형을 다시 내면 새 맵으로 바뀌어요.`;
+    $('#shareOverlay').hidden=true; $('#doneOverlay').hidden=false; sfx('win'); setTimeout(()=>$('#doneOk').focus(),50);
   }catch(e){ shareStatus('제출하지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'); }
   uploading=false;
 });
 $('#saveFile').addEventListener('click',()=>{
   const name=(($('#shareTitle').value.trim())||'내 게임').replace(/[\\/:*?"<>|]/g,'').slice(0,40)||'내 게임';
   const lv=analyze(); syncDoors(lv);
-  const meta={type:gameType,doors:lv.doors.map(d=>{ const q=doorQs[d.qi]; return {x:d.x,y:d.y,q:q.q,a:q.a}; })};
+  const meta={type:gameType,example:isExample,doors:lv.doors.map(d=>{ const q=doorQs[d.qi]; return {x:d.x,y:d.y,q:q.q,a:q.a}; })};
   pad.toBlob(async b0=>{ let b=b0; try{ b=await pngWithText(b0,'doodle-doors',b64e(JSON.stringify(meta))); }catch(e){}
     const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name+'.png'; document.body.appendChild(a); a.click();
     setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },3000); shareStatus('그림 파일로 저장했어요. 문 문제도 파일 안에 함께 저장돼요.'); },'image/png');
@@ -985,7 +1090,7 @@ $('#fileOpen2').addEventListener('click',openFilePicker);
 $('#fileInput').addEventListener('change',async e=>{
   const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
   const url=URL.createObjectURL(f);
-  try{ await loadImageToPad(url); doorQs=[]; try{ const t=readPngText(new Uint8Array(await f.arrayBuffer()),'doodle-doors'); if(t){ const mt=JSON.parse(b64d(t)); setGameType(Array.isArray(mt)?'platform':mt.type,true); doorQs=(Array.isArray(mt)?mt:(mt.doors||[])).map(d=>({x:+d.x,y:+d.y,q:String(d.q||''),a:String(d.a||''),ai:null})); } else setGameType('platform',true); }catch(e){} $('#shareOverlay').hidden=true; paused=false; currentMeta={title:f.name.replace(/\.[^.]+$/,'').slice(0,30)}; openStudio('play'); toast('그림 파일을 불러왔어요'); }
+  try{ await loadImageToPad(url); isExample=false; doorQs=[]; try{ const t=readPngText(new Uint8Array(await f.arrayBuffer()),'doodle-doors'); if(t){ const mt=JSON.parse(b64d(t)); isExample=!Array.isArray(mt)&&!!mt.example; setGameType(Array.isArray(mt)?'platform':mt.type,true); doorQs=(Array.isArray(mt)?mt:(mt.doors||[])).map(d=>({x:+d.x,y:+d.y,q:String(d.q||''),a:String(d.a||''),ai:null})); } else setGameType('platform',true); }catch(e){} $('#shareOverlay').hidden=true; paused=false; currentMeta={title:f.name.replace(/\.[^.]+$/,'').slice(0,30)}; openStudio('play'); toast('그림 파일을 불러왔어요'); }
   catch(err){ toast('이 파일은 열 수 없어요. PNG나 JPG 그림을 골라 주세요.'); }
   finally{ URL.revokeObjectURL(url); }
 });
@@ -1286,6 +1391,7 @@ function drawExampleBreak(){
   rect(40,560,70,22,'#e53935'); rect(1090,560,70,22,'#e53935');
 }
 $('#exampleBreak').addEventListener('click',()=>{
+  isExample=true;
   setGameType('breakout',true); drawExampleBreak();
   doorQs=[{x:0,y:0,q:'sin 30° 의 값은?',a:'1/2; 0.5',ai:null}];
   const lv=analyze(); if(lv.doors[0]){ doorQs[0].x=lv.doors[0].x; doorQs[0].y=lv.doors[0].y; }
@@ -1317,6 +1423,7 @@ $('#tPw').addEventListener('keydown',e=>{ if(e.key==='Enter') tryTeacher(); });
 $('#tCancel').addEventListener('click',()=>{ $('#tGate').hidden=true; });
 window.addEventListener('message',e=>{ if(e.origin===location.origin && e.data && e.data.type==='doodle-close-teacher') closeTeacherFrame(); });
 
+$('#doneOk').addEventListener('click',()=>{ $('#doneOverlay').hidden=true; paused=false; G.last=performance.now(); });
 /* gallery */
 function gmsg(t){ $('#galleryMsg').textContent=t; }
 function openGallery(){ showScreen('gallery'); window.scrollTo(0,0); renderGallery(); }
@@ -1337,6 +1444,7 @@ function renderGallery(){
     const play=document.createElement('button'); play.className='btn primary'; play.textContent='▶ 해 보기';
     play.addEventListener('click',async()=>{
       try{ await loadImageToPad(v.img); }catch(e){ gmsg('이 맵을 열지 못했어요.'); return; }
+      isExample=false;
       setGameType(v.type,true);
       doorQs=(Array.isArray(v.doors)?v.doors:Object.values(v.doors||{})).map(d=>({x:+d.x,y:+d.y,q:String(d.q||''),a:String(d.a||''),ai:null}));
       currentMeta={title: (v.uid||String(v.id).split('_')[0])===me.uid ? String(v.title||'') : ''};

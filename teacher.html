@@ -146,6 +146,26 @@ input[type=text]{font:inherit;font-size:17px;padding:10px 12px;border:2px solid 
 .qtable td.ai{color:var(--muted);font-size:14px;min-width:200px}
 @media (max-width:900px){ .livegrid{grid-template-columns:1fr} .log{max-height:none} }
 @media (max-width:600px){ .vimg img{max-width:100%} .vnav{display:none} }
+
+/* ===== 반응형 ===== */
+.tabs{overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
+.tab{white-space:nowrap;flex:none}
+@media (max-width:640px){
+  .wrap{padding:10px 12px 40px}
+  header{flex-wrap:wrap}
+  .brand{font-size:18px}
+  .dhead{gap:10px 14px}
+  .dhead h2{font-size:24px}
+  .code{font-size:26px}
+  .tab{font-size:16px;padding:6px 12px}
+  .summary .sum{padding:6px 10px}
+  .summary .num{font-size:24px}
+  .students{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  .subs{--w:160px !important}
+  .vtop h3{font-size:20px}
+  .vtop{flex-wrap:wrap}
+  .cgrid2{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
