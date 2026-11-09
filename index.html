@@ -166,6 +166,14 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
 .door-btn{border-color:#ff7a00}
 .checks{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:15px}
 .checks li.no{color:#d33}
+#studio .toolbar .right{order:1}
+#studio .toolbar .grow.draw-only{order:2;flex-basis:100%}
+.typeseg .typelabel{white-space:nowrap}
+.typeseg{display:flex;align-items:stretch;border:2.5px solid var(--ink);border-radius:14px;overflow:hidden;flex:none;box-shadow:3px 3px 0 var(--ink)}
+.typeseg .typelabel{display:flex;align-items:center;padding:0 10px;font-size:13px;font-weight:700;color:var(--muted);background:var(--surface-2);border-right:2px solid var(--line)}
+.typeseg button{font-family:"Jua","Apple SD Gothic Neo",sans-serif;font-size:19px;padding:9px 16px;border:none;background:var(--surface);color:var(--ink);cursor:pointer;white-space:nowrap}
+.typeseg button+button{border-left:2px solid var(--line)}
+.typeseg button.on{background:#ff7a00;color:#fff}
 #gridBtn[aria-pressed="false"]{opacity:.45}
 @media (max-width:760px){ .hero{grid-template-columns:1fr} .doodle{max-width:420px} .actions,.notes{grid-template-columns:1fr} }
 </style>
@@ -220,7 +228,7 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
   </div>
   <div class="actions">
     <button class="action main" id="newBtn"><span class="big">✏️</span><span class="t">새로 그리기</span><span class="s">빈 도화지에서 맵을 그려요</span></button>
-    <button class="action" id="exampleStart"><span class="big">🎲</span><span class="t">예시 맵으로 시작</span><span class="s">장애물 넘기 예시를 해 보고 고쳐요</span></button>
+    <button class="action" id="exampleStart"><span class="big">🏃</span><span class="t">장애물 넘기 예시</span><span class="s">발판을 넘어 깃발까지 가요</span></button>
     <button class="action" id="exampleBreak"><span class="big">🏓</span><span class="t">벽돌깨기 예시</span><span class="s">공을 튕겨 벽돌을 부숴요</span></button>
     <button class="action" id="galleryOpen"><span class="big">🏫</span><span class="t">학급 갤러리</span><span class="s">친구들이 제출한 맵을 해 봐요</span></button>
   </div>
@@ -282,9 +290,10 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
       <button data-m="draw" class="on">✏️ 그리기</button>
       <button data-m="play">▶ 플레이</button>
     </div>
-    <div class="group draw-only" id="typeSeg" role="group" aria-label="게임 유형">
-      <button class="chip-btn on" data-g="platform">🏃 장애물</button>
-      <button class="chip-btn" data-g="breakout">🏓 벽돌깨기</button>
+    <div class="typeseg draw-only" id="typeSeg" role="group" aria-label="게임 유형">
+      <span class="typelabel">게임 유형</span>
+      <button class="on" data-g="platform">🏃 장애물 넘기</button>
+      <button data-g="breakout">🏓 벽돌깨기</button>
     </div>
     <div class="grow draw-only">
       <div class="pens" id="pens"></div>
