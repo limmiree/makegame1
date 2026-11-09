@@ -170,10 +170,6 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
 .qitem textarea,.qitem input,.door-card input{font:inherit;font-size:17px;padding:9px 11px;border:2px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);resize:vertical}
 .qitem textarea{min-height:60px}
 .qitem textarea:focus,.qitem input:focus,.door-card input:focus{outline:3px solid var(--pink);outline-offset:1px}
-.ai{margin:0;font-size:14px;border-radius:8px;padding:6px 10px;background:var(--surface-2)}
-.ai.ok{background:color-mix(in srgb,#2e9e4b 15%,var(--surface));}
-.ai.bad{background:color-mix(in srgb,#e5484d 14%,var(--surface));}
-.ai.warn{background:color-mix(in srgb,#e8a317 16%,var(--surface));}
 .keys{display:flex;flex-wrap:wrap;gap:6px}
 .keys button{font:inherit;font-size:17px;min-width:42px;padding:5px 10px;border:2px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);cursor:pointer}
 .door-card{width:min(520px,94%);display:flex;flex-direction:column;gap:10px}
@@ -361,7 +357,7 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
         <li>✏️ 그리기에서 🏃 장애물 또는 🏓 벽돌깨기를 고르고 맵을 그린 뒤 ▶ 플레이를 눌러요.</li>
         <li>하다가 막히면 ✏️ 그리기를 눌러요. 캐릭터는 그 자리에 멈춰 있어요.</li>
         <li>발판을 더 그리거나 지우고 ▶ 플레이를 누르면 멈춘 곳에서 이어서 해요.</li>
-        <li class="must">주황색 문을 1개 이상 그리고 🚪 문제 넣기로 문제와 정답을 꼭 만들어야 해요. AI가 문제와 정답에 이상이 없는지 검사해 줘요.</li>
+        <li class="must">주황색 문을 1개 이상 그리고 🚪 문제 넣기로 문제와 정답을 꼭 만들어야 해요.</li>
         <li>다 만들면 📮 버튼으로 선생님께 제출해요.</li>
         <li>태블릿 펜을 쓰면 손바닥이 닿아도 그려지지 않게 펜만 그리기가 자동으로 켜져요.</li>
       </ol>
@@ -453,8 +449,7 @@ header.site{display:flex;align-items:center;justify-content:space-between;max-wi
         <div class="q-actions">
           <p class="status" id="qStatus"></p>
           <div class="row">
-            <button class="btn primary" id="aiCheckBtn">🤖 AI에게 검사받기</button>
-            <button class="btn ghost" id="qClose">저장하고 닫기</button>
+            <button class="btn primary" id="qClose">저장하고 닫기</button>
           </div>
         </div>
       </div>
@@ -1053,15 +1048,8 @@ $('#shareUpload').addEventListener('click',async()=>{
   const empty=lv.doors.filter(d=>{ const q=doorQs[d.qi]; return !(q.q.trim()&&q.a.trim()); });
   if(empty.length){ shareStatus(`${empty.map(d=>d.no).join(', ')}번 문에 문제와 정답을 넣어야 해요. ✏️ 그리기의 🚪 문제 넣기에서 써 주세요.`); return; }
   uploading=true;
-  const need=lv.doors.filter(d=>!aiFresh(doorQs[d.qi]));
-  if(need.length && aiReady()){ shareStatus('AI가 문제를 검사하는 중이에요…'); await aiCheck(lv.doors); renderChecks(lv); }
-  const bad=lv.doors.filter(d=>{ const r=doorQs[d.qi].ai; return r && aiFresh(doorQs[d.qi]) && r.verdict!=='ok'; });
-  if(bad.length && !confirmSubmit){
-    uploading=false; confirmSubmit=true; setTimeout(()=>confirmSubmit=false,8000);
-    shareStatus(`AI가 ${bad.map(d=>d.no).join(', ')}번 문에 고칠 점이 있다고 했어요. 🚪 문제 넣기에서 확인해 보세요. 그래도 내려면 제출을 한 번 더 눌러요.`); return;
-  }
   confirmSubmit=false; shareStatus('제출하는 중이에요…');
-  const doors=lv.doors.map(d=>{ const q=doorQs[d.qi]; const r=aiFresh(q)?q.ai:null; return {no:d.no,x:+d.x.toFixed(2),y:+d.y.toFixed(2),q:q.q.slice(0,300),a:q.a.slice(0,100),verdict:r?r.verdict:'unchecked',ai:r?String(r.message||'').slice(0,300):''}; });
+  const doors=lv.doors.map(d=>{ const q=doorQs[d.qi]; return {no:d.no,x:+d.x.toFixed(2),y:+d.y.toFixed(2),q:q.q.slice(0,300),a:q.a.slice(0,100)}; });
   try{
     await set(ref(fb.db,cPath('submissions/'+me.uid+'_'+gameType)),{uid:me.uid,name:me.name,sid:me.sid||'',rname:me.rname||'',title,type:gameType,img:encodePad(),doors,submittedAt:serverTimestamp()});
     send({submittedAt:serverTimestamp(),title}); currentMeta={title};
@@ -1102,7 +1090,7 @@ $('#fileInput').addEventListener('change',async e=>{
 });
 
 /* =========================================================
-   ORANGE DOORS: questions, answers, AI check
+   ORANGE DOORS: questions and answers
    ========================================================= */
 function applyOpen(lv,d){
   const rows={}; for(const i of d.cells){ const y=(i/lv.cols)|0, x=i%lv.cols; (rows[y]=rows[y]||[]).push(x); }
@@ -1159,13 +1147,6 @@ function buildKeys(box,getField){
 }
 buildKeys($('#qKeys'),()=>lastField); buildKeys($('#doorKeys'),()=>$('#doorInput'));
 
-const VERDICT={ok:['ok','✅ 문제와 정답에 이상이 없어요.'],wrong_answer:['bad','❌ 정답이 맞지 않아요.'],incomplete:['warn','⚠️ 정답이 빠졌거나 덜 썼어요.'],unclear:['warn','⚠️ 문제가 애매해요.'],not_math:['warn','⚠️ 수학 문제가 아닌 것 같아요.'],inappropriate:['bad','❌ 문제에 어울리지 않는 내용이 있어요.']};
-function aiFresh(q){ return !!(q&&q.ai&&q.ai.q===q.q&&q.ai.a===q.a); }
-function aiLine(el,q){
-  if(!q.q.trim()||!q.a.trim()){ el.className='ai'; el.textContent='문제와 정답을 모두 써 주세요.'; return; }
-  if(!aiFresh(q)){ el.className='ai'; el.textContent= q.ai ? '고친 뒤 아직 AI 검사를 안 했어요.' : 'AI 검사 전이에요.'; return; }
-  const v=VERDICT[q.ai.verdict]||['warn','⚠️ 확인이 필요해요.']; el.className='ai '+v[0]; el.textContent=v[1]+(q.ai.message?' '+q.ai.message:'');
-}
 function openQ(){
   refreshDrawDoors(); const list=$('#qList'); list.textContent=''; $('#qStatus').textContent='';
   if(!drawDoors.length){ const p=document.createElement('p'); p.className='small'; p.textContent='아직 주황색 문이 없어요. 주황 펜으로 길을 막는 문을 그려 주세요.'; list.appendChild(p); }
@@ -1175,79 +1156,20 @@ function openQ(){
     const h=document.createElement('h3'); h.textContent=`🚪 ${d.no}번 문 (x ${Math.round(d.x)}, y ${Math.round(ROWS-d.y)})`;
     const l1=document.createElement('label'); l1.textContent='문제'; const ta=document.createElement('textarea'); ta.maxLength=300; ta.value=q.q; ta.placeholder='예: 이차방정식 x² − 7x + 12 = 0 의 두 근을 구하시오.'; l1.appendChild(ta);
     const l2=document.createElement('label'); l2.textContent='정답'; const inp=document.createElement('input'); inp.maxLength=100; inp.value=q.a; inp.placeholder='예: 3, 4'; inp.autocomplete='off'; l2.appendChild(inp);
-    const ai=document.createElement('p'); aiLine(ai,q);
     for(const f of [ta,inp]) f.addEventListener('focus',()=>lastField=f);
-    ta.addEventListener('input',()=>{ q.q=ta.value; aiLine(ai,q); }); inp.addEventListener('input',()=>{ q.a=inp.value; aiLine(ai,q); });
-    it.append(h,l1,l2,ai); it._ai=ai; it._q=q; list.appendChild(it);
+    ta.addEventListener('input',()=>{ q.q=ta.value; }); inp.addEventListener('input',()=>{ q.a=inp.value; });
+    it.append(h,l1,l2); list.appendChild(it);
   }
-  $('#aiCheckBtn').disabled=!drawDoors.length;
-  if(!aiReady()) $('#qStatus').textContent='AI 검사를 쓸 수 없는 상태예요. 문제와 정답은 그대로 저장돼요.';
   paused=true; $('#qOverlay').hidden=false;
 }
 $('#qBtn').addEventListener('click',openQ);
 $('#qClose').addEventListener('click',()=>{ $('#qOverlay').hidden=true; paused=false; });
-$('#aiCheckBtn').addEventListener('click',async()=>{
-  const ready=drawDoors.filter(d=>{ const q=doorQs[d.qi]; return q.q.trim()&&q.a.trim(); });
-  if(!ready.length){ $('#qStatus').textContent='문제와 정답을 먼저 써 주세요.'; return; }
-  if(!aiReady()){ $('#qStatus').textContent='AI 검사를 쓸 수 없는 상태예요. 선생님께 설정을 확인해 달라고 해 주세요.'; return; }
-  $('#aiCheckBtn').disabled=true; $('#qStatus').textContent='AI가 문제와 정답을 검사하는 중이에요…';
-  const ok=await aiCheck(ready);
-  $('#qList').querySelectorAll('.qitem').forEach(it=>aiLine(it._ai,it._q));
-  $('#qStatus').textContent= ok ? 'AI 검사가 끝났어요. 결과는 참고용이에요. 마지막 판단은 내가 해요.' : 'AI 검사를 하지 못했어요. 잠시 뒤 다시 눌러 주세요.';
-  $('#aiCheckBtn').disabled=false;
-});
 const TYPE_NAME={platform:'🏃 장애물 넘기',breakout:'🏓 벽돌깨기'};
 function renderChecks(lv){
   const ul=$('#shareChecks'); ul.textContent='';
   const filled=lv.doors.filter(d=>{ const q=doorQs[d.qi]; return q.q.trim()&&q.a.trim(); }).length;
-  const okc=lv.doors.filter(d=>aiFresh(doorQs[d.qi])&&doorQs[d.qi].ai.verdict==='ok').length;
-  const rows=[[lv.doors.length>0,`주황 문 ${lv.doors.length}개 (1개 이상 필요)`],[lv.doors.length>0&&filled===lv.doors.length,`문제와 정답 입력 ${filled}/${lv.doors.length}`],[lv.doors.length>0&&okc===lv.doors.length,`AI 검사 통과 ${okc}/${lv.doors.length}`+(aiReady()?'':' (AI 사용 불가)')]];
+  const rows=[[lv.doors.length>0,`주황 문 ${lv.doors.length}개 (1개 이상 필요)`],[lv.doors.length>0&&filled===lv.doors.length,`문제와 정답 입력 ${filled}/${lv.doors.length}`]];
   for(const [ok,t] of rows){ const li=document.createElement('li'); li.className=ok?'':'no'; li.textContent=(ok?'✅ ':'⬜ ')+t; ul.appendChild(li); }
-}
-
-/* --- AI (Firebase AI Logic, Gemini) --- */
-let aiModel=null, aiTried=false;
-const aiReady=()=>!!aiModel;
-(async()=>{
-  await fbReady; if(!fb) return;
-  try{
-    if(CFG.appCheckSiteKey){
-      const ac=await import(FB_CDN+'firebase-app-check.js');
-      ac.initializeAppCheck(fb.app,{provider:new ac.ReCaptchaEnterpriseProvider(CFG.appCheckSiteKey),isTokenAutoRefreshEnabled:true});
-    }
-    const m=await import(FB_CDN+'firebase-ai.js');
-    const S=m.Schema;
-    const schema=S.object({properties:{results:S.array({items:S.object({properties:{
-      no:S.number(), verdict:S.enumString({enum:['ok','wrong_answer','incomplete','unclear','not_math','inappropriate']}), message:S.string() }})})}});
-    const ai=m.getAI(fb.app,{backend:new m.GoogleAIBackend()});
-    aiModel=m.getGenerativeModel(ai,{model:CFG.aiModel||'gemini-3.5-flash',generationConfig:{responseMimeType:'application/json',responseSchema:schema,temperature:0.1}});
-  }catch(e){ aiModel=null; }
-})();
-async function aiCheck(doors){
-  if(!aiModel) return false;
-  const items=doors.map(d=>({no:d.no,문제:doorQs[d.qi].q,정답:doorQs[d.qi].a}));
-  const prompt=`너는 중학교 3학년 학생이 게임 속 '문제 문'에 넣은 수학 문제를 검토하는 도우미야.
-각 항목의 문제를 직접 풀어 보고, 학생이 쓴 정답이 맞는지 판단해.
-정답 표기 규칙: 답이 여러 개면 쉼표(,)로 나열하고, 같은 답의 다른 표현은 세미콜론(;)으로 나눈다. x=3 처럼 써도 된다.
-verdict는 다음 중 하나로 골라:
-- ok: 문제가 분명하고 정답이 맞음
-- wrong_answer: 정답이 틀림
-- incomplete: 답이 여러 개인데 일부만 썼거나, 조건이 빠져 정답이 하나로 정해지지 않음
-- unclear: 문제 문장이 애매하거나 오타 때문에 뜻이 정해지지 않음
-- not_math: 수학 문제가 아님
-- inappropriate: 욕설, 비하, 개인정보 등 수업에 맞지 않는 내용
-message는 학생에게 보여 줄 친절한 한국어 1~2문장이야. 틀린 경우 올바른 정답을 직접 알려 주지 말고, 어디를 다시 계산하거나 고치면 좋을지 힌트만 줘. ok면 짧게 칭찬하거나 중3 수준에 비해 너무 쉬운지 정도만 알려 줘.
-결과는 results 배열에 각 항목의 no와 함께 담아.
-검토할 항목(JSON): ${JSON.stringify(items)}`;
-  for(let attempt=0;attempt<3;attempt++){
-    try{
-      const r=await aiModel.generateContent(prompt);
-      const txt=r.response.text(); const data=JSON.parse(txt.replace(/```json|```/g,'').trim());
-      for(const res of (data.results||[])){ const d=doors.find(x=>x.no===Number(res.no)); if(!d) continue; const q=doorQs[d.qi]; q.ai={verdict:String(res.verdict),message:String(res.message||'').slice(0,300),q:q.q,a:q.a}; }
-      return true;
-    }catch(e){ await new Promise(r=>setTimeout(r,1500*(attempt+1)+Math.random()*800)); }
-  }
-  return false;
 }
 
 /* --- coordinate grid --- */

@@ -143,7 +143,6 @@ input[type=text]{font:inherit;font-size:17px;padding:10px 12px;border:2px solid 
 .qtable .link{background:none;border:none;padding:0;font:inherit;color:inherit;text-decoration:underline;text-decoration-color:var(--line);cursor:pointer;text-align:left}
 .vt{font-weight:700;white-space:nowrap}
 .vt.ok{color:var(--ok)}.vt.bad{color:var(--out)}.vt.warn{color:var(--blur)}
-.qtable td.ai{color:var(--muted);font-size:14px;min-width:200px}
 @media (max-width:900px){ .livegrid{grid-template-columns:1fr} .log{max-height:none} }
 @media (max-width:600px){ .vimg img{max-width:100%} .vnav{display:none} }
 
@@ -271,17 +270,13 @@ input[type=text]{font:inherit;font-size:17px;padding:10px 12px;border:2px solid 
 
   <div id="tQs" hidden>
     <div class="subbar">
-      <span class="muted">보기</span>
-      <button class="btn ghost qf on" data-f="all">전체</button>
-      <button class="btn ghost qf" data-f="bad">AI 확인 필요</button>
-      <button class="btn ghost qf" data-f="unchecked">검사 안 함</button>
       <span class="spacer"></span>
       <button class="btn" id="csvBtn">⬇ 엑셀(CSV)로 받기</button>
     </div>
     <p class="missing" id="qSummary"></p>
     <div class="qwrap">
       <table class="qtable">
-        <thead><tr><th>학번</th><th>이름</th><th>게임</th><th>문</th><th>문제</th><th>정답</th><th>AI 판정</th><th>AI 의견</th></tr></thead>
+        <thead><tr><th>학번</th><th>이름</th><th>게임</th><th>문</th><th>문제</th><th>정답</th></tr></thead>
         <tbody id="qBody"></tbody>
       </table>
     </div>
@@ -521,7 +516,6 @@ const bySid=(a,b)=>sidOf(a).localeCompare(sidOf(b),'ko',{numeric:true})||String(
 const ownerOf=(id,v)=>String((v&&v.uid)||String(id).split('_')[0]);
 const TICON=t=>t==='breakout'?'🏓':'🏃';
 function subsOf(uid){ return Object.entries(subsData).filter(([id,v])=>ownerOf(id,v)===uid).map(([id,v])=>v); }
-let qFilter='all';
 function renderQs(){
   const body=$('#qBody'); body.textContent='';
   const subs=Object.entries(subsData).map(([id,v])=>Object.assign({id},v)).sort(bySid);
@@ -529,9 +523,7 @@ function renderQs(){
   for(const v of subs){
     const ds=doorList(v); let first=true;
     for(const d of ds){
-      total++; const vd=d.verdict||'unchecked'; if(vd==='unchecked') unc++; else if(vd!=='ok') bad++;
-      if(qFilter==='bad' && (vd==='ok'||vd==='unchecked')) continue;
-      if(qFilter==='unchecked' && vd!=='unchecked') continue;
+      total++;
       shown++;
       const tr=document.createElement('tr'); if(first) tr.className='first'; first=false;
       const cell=(t,c)=>{ const td=document.createElement('td'); td.textContent=t; if(c) td.className=c; tr.appendChild(td); return td; };
@@ -539,20 +531,17 @@ function renderQs(){
       const gt=document.createElement('td'); const lk=document.createElement('button'); lk.className='link'; lk.textContent=`${TICON(v.type)} ${v.title||'이름 없는 게임'}`; lk.title='맵 크게 보기';
       lk.addEventListener('click',()=>{ const i=subOrder.findIndex(x=>x.id===v.id); if(i>=0) openViewer(i); }); gt.appendChild(lk); tr.appendChild(gt);
       cell(`${d.no}번`,'nw'); cell(d.q||'','q'); cell(d.a||'');
-      const t=VTXT[vd]||VTXT.unchecked; const vt=cell(t[1]); vt.firstChild && (vt.className=''); const sp=document.createElement('span'); sp.className='vt '+t[0]; sp.textContent=t[1]; vt.textContent=''; vt.appendChild(sp);
-      cell(d.ai||'','ai');
       body.appendChild(tr);
     }
   }
   $('#bQs').textContent=total; $('#noQs').hidden=shown>0; $('#noQs').textContent= total? '이 조건에 맞는 문제가 없어요.' : '아직 제출된 문제가 없어요.';
-  $('#qSummary').textContent = total ? `문제 ${total}개, AI 확인 필요 ${bad}개, 검사 안 함 ${unc}개` : '';
+  $('#qSummary').textContent = total ? `문제 ${total}개` : '';
 }
-document.querySelectorAll('.qf').forEach(b=>b.addEventListener('click',()=>{ qFilter=b.dataset.f; document.querySelectorAll('.qf').forEach(x=>x.classList.toggle('on',x===b)); renderQs(); }));
 $('#csvBtn').addEventListener('click',()=>{
   const esc=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
-  const rows=[['학번','이름','유형','게임','문 번호','문제','정답','AI 판정','AI 의견','제출 시각']];
-  for(const v of Object.values(subsData).sort(bySid)) for(const d of doorList(v)){ const t=VTXT[d.verdict||'unchecked']||VTXT.unchecked;
-    rows.push([sidOf(v),rnameOf(v),v.type==='breakout'?'벽돌깨기':'장애물 넘기',v.title||'',d.no,d.q||'',d.a||'',t[1].replace(/^[^가-힣]+/,''),d.ai||'',v.submittedAt?new Date(v.submittedAt).toLocaleString('ko-KR'):'']); }
+  const rows=[['학번','이름','유형','게임','문 번호','문제','정답','제출 시각']];
+  for(const v of Object.values(subsData).sort(bySid)) for(const d of doorList(v)){
+    rows.push([sidOf(v),rnameOf(v),v.type==='breakout'?'벽돌깨기':'장애물 넘기',v.title||'',d.no,d.q||'',d.a||'',v.submittedAt?new Date(v.submittedAt).toLocaleString('ko-KR'):'']); }
   const csv='\ufeff'+rows.map(r=>r.map(esc).join(',')).join('\r\n');
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
   a.download=`${$('#dName').textContent||'반'}_제출문제.csv`; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },2000);
@@ -569,11 +558,10 @@ function renderSubs(){
     const si=document.createElement('div'); si.className='si';
     const n=document.createElement('b'); n.textContent=v.name||'이름 없음';
     const t=document.createElement('span'); t.textContent=`“${v.title||'이름 없는 게임'}”, ${v.submittedAt?hhmm(v.submittedAt):''} 제출`;
-    const ds=doorList(v), bad=ds.filter(d=>d.verdict&&d.verdict!=='ok').length;
+    const ds=doorList(v);
     const tl=document.createElement('div'); tl.className='tagline';
     const c0=document.createElement('span'); c0.className='chip2'; c0.textContent=v.type==='breakout'?'🏓 벽돌깨기':'🏃 장애물'; tl.appendChild(c0);
     const c1=document.createElement('span'); c1.className='chip2'; c1.textContent=`🚪 문 ${ds.length}개`; tl.appendChild(c1);
-    if(bad){ const c2=document.createElement('span'); c2.className='chip2 bad'; c2.textContent=`AI 확인 필요 ${bad}`; tl.appendChild(c2); }
     si.append(n,t,tl); b.append(im,si); b.addEventListener('click',()=>openViewer(i)); box.appendChild(b);
   });
   const missing=Object.entries(students).filter(([id])=>!subsOf(id).length).map(([,s])=>s.name||'이름 없음').sort((a,b)=>a.localeCompare(b,'ko',{numeric:true}));
@@ -582,7 +570,6 @@ function renderSubs(){
 }
 document.querySelectorAll('[data-w]').forEach(b=>b.addEventListener('click',()=>$('#subs').style.setProperty('--w',b.dataset.w+'px')));
 $('#showAll').addEventListener('click',()=>{ if(subOrder.length) openViewer(0); });
-const VTXT={ok:['ok','✅ 이상 없음'],wrong_answer:['bad','❌ 정답 틀림'],incomplete:['warn','⚠️ 정답 불완전'],unclear:['warn','⚠️ 문제 애매함'],not_math:['warn','⚠️ 수학 문제 아님'],inappropriate:['bad','❌ 부적절한 내용'],unchecked:['warn','검사 안 함']};
 const doorList=v=>Array.isArray(v.doors)?v.doors:Object.values(v.doors||{});
 function openViewer(i){ $('#viewer').hidden=false; showViewer(i); }
 function showViewer(i){
@@ -597,9 +584,7 @@ function showViewer(i){
     const h=document.createElement('h4'); h.textContent=`🚪 ${d.no}번 문`;
     const q=document.createElement('p'); q.textContent='문제: '+(d.q||'');
     const a=document.createElement('p'); a.textContent='정답: '+(d.a||'');
-    const t=VTXT[d.verdict]||VTXT.unchecked; const vv=document.createElement('p'); vv.className='v '+t[0]; vv.textContent='AI: '+t[1];
-    el.append(h,q,a,vv);
-    if(d.ai){ const m=document.createElement('p'); m.textContent=d.ai; m.style.color='#5b6380'; el.appendChild(m); }
+    el.append(h,q,a);
     box.appendChild(el);
   }
 }
